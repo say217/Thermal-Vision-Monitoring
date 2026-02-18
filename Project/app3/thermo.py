@@ -186,8 +186,8 @@ def _tts_loop():
 def _sanitize_for_tts(text):
     if not text:
         return ""
-    cleaned = re.sub(r"\b\d+(?:[:\-\.\/]\d+)*\b", "", text)
-    cleaned = re.sub(r"\b\d+\b", "", cleaned)
+    # Reduce to alphabetic text so the voice module skips numbers/special chars.
+    cleaned = re.sub(r"[^A-Za-z\s]", " ", text)
     cleaned = re.sub(r"\s+", " ", cleaned)
     return cleaned.strip()
 
