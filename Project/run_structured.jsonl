@@ -1,0 +1,2 @@
+{"timestamp": "2026-02-18T15:23:12.608Z", "frame_id": 1023, "person_id": "det-1023-5", "detection_index": 5, "bbox": {"w": 16, "h": 45}, "confidence": 0.3727, "motion_state": null, "temperature_mean": 164.2417, "temperature_max": 249.0}
+{"timestamp": "2026-02-18T15:23:13.107Z", "frame_id": 1044, "person_id": "01", "detection_index": 3, "bbox": {"w": 20, "h": 53}, "confidence": 0.706, "motion_state": "moving", "temperature_mean": 132.1547, "temperature_max": 255.0}

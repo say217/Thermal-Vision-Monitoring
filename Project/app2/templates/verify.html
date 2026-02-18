@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Email</title>
+</head>
+<body>
+    <h1>Verify Your Email</h1>
+    <p>We sent a verification code to: {{ email }}</p>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <form method="POST">
+        <input type="text" name="code" placeholder="Verification Code" required>
+        <button type="submit">Verify</button>
+    </form>
+    <a href="{{ url_for('app2.login') }}">Back to Login</a>
+</body>
+</html>

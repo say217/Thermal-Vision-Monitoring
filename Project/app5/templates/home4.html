@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Historical Data</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', 'Inter', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, rgb(15, 10, 45) 0%, rgb(5, 5, 15) 50%, rgb(10, 10, 30) 100%);
+            color: #f0f0f5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 20%, rgba(75, 0, 130, 0.3), transparent 70%);
+            z-index: -1;
+            opacity: 0.6;
+            animation: fadeIn 1.2s ease-out forwards;
+        }
+
+        .nav-links {
+            position: absolute;
+            top: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: linear-gradient(90deg, #8a2be2, #1e90ff);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
+        }
+
+        .container {
+            margin-top: 80px;
+            display: flex;
+            flex-direction: column;
+            width: 90%;
+            max-width: 1400px;
+            margin-bottom: 30px;
+            gap: 20px;
+            animation: fadeIn 1s ease-out 0.2s forwards;
+            opacity: 0;
+        }
+
+        .input-container {
+            padding: 25px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.4s ease, box-shadow 0.4s ease, border 0.3s ease;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            animation: fadeIn 1s ease-out 0.4s forwards;
+            opacity: 0;
+        }
+
+        .input-container:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(138, 43, 226, 0.3);
+            border: 1px solid rgba(138, 43, 226, 0.5);
+        }
+
+        .input-container h1 {
+            margin-top: 0;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #e0e0f5;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            font-size: 1rem;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-group input:hover,
+        .form-group select:hover {
+            border-color: #8a2be2;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #8a2be2;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.5);
+        }
+
+        .form-group button {
+            padding: 12px;
+            background: linear-gradient(90deg, #8a2be2, #1e90ff);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 160px;
+            position: relative;
+            overflow: hidden;
+            margin: 15px auto 0;
+            display: block;
+        }
+
+        .form-group button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .form-group button:hover::before {
+            left: 100%;
+        }
+
+        .form-group button:hover {
+            background: linear-gradient(90deg, #6a0dad, #104e8b);
+            transform: scale(1.08);
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+        }
+
+        .error-message {
+            margin-top: 20px;
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            color: #ff6666;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        .error-message ul {
+            list-style: disc;
+            padding-left: 20px;
+            text-align: left;
+        }
+
+        .results-container {
+            width: 90%;
+            max-width: 1400px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+            transition: transform 0.4s ease;
+            animation: fadeIn 1s ease-out 0.5s forwards;
+            opacity: 0;
+        }
+
+        .results-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(138, 43, 226, 0.3);
+        }
+
+        .results-container h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .results-container p {
+            font-size: 1rem;
+            color: #b0b0d5;
+            margin-bottom: 15px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1rem;
+            color: #e0e0f5;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .results-table th {
+            font-weight: 600;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        .results-table td {
+            color: #e0e0f5;
+            white-space: nowrap;
+        }
+
+        .results-table tr:hover {
+            background: rgba(138, 43, 226, 0.1);
+            transition: background 0.3s ease;
+        }
+
+        .download-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .download-section a {
+            padding: 12px 24px;
+            background: linear-gradient(90deg, #28a745, #1e90ff);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .download-section a:hover {
+            background: linear-gradient(90deg, #218838, #104e8b);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(40, 167, 69, 0.5);
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+            }
+
+            .input-container {
+                width: 100%;
+                margin: 0;
+                border-radius: 12px;
+            }
+
+            .form-group button {
+                width: 100%;
+            }
+
+            .input-container h1 {
+                font-size: 1.8rem;
+            }
+
+            .results-table {
+                font-size: 0.9rem;
+            }
+
+            .results-table th,
+            .results-table td {
+                padding: 8px 10px;
+            }
+
+            .results-container {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <a href="{{ url_for('app1.home') }}">Back to Home</a>
+        <a href="{{ url_for('app4.page') }}">Go to App4</a>
+        <a href="{{ url_for('app3.page') }}">Go to App3</a>
+        <a href="{{ url_for('app6.page') }}">Go to App6</a>
+        <a href="{{ url_for('app5.page') }}">Go to App5</a>
+        <a href="{{ url_for('app7.page') }}">Go to App7</a>
+        <a href="{{ url_for('app2.logout') }}">Logout</a>
+    </div>
+
+    <div class="container">
+        <div class="input-container">
+            <h1>Stock Historical Data</h1>
+            <form method="POST" class="form-grid">
+                <div class="form-group">
+                    <label for="ticker">Stock Ticker (e.g., RELIANCE.NS)</label>
+                    <input type="text" name="ticker" id="ticker" value="{{ form_data.ticker | default('') }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="interval">Interval</label>
+                    <select name="interval" id="interval">
+                        <option value="1d" {% if form_data.interval == '1d' %}selected{% endif %}>Daily</option>
+                        <option value="1wk" {% if form_data.interval == '1wk' %}selected{% endif %}>Weekly</option>
+                        <option value="1mo" {% if form_data.interval == '1mo' %}selected{% endif %}>Monthly</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="start_date">Start Date (YYYY-MM-DD)</label>
+                    <input type="text" name="start_date" id="start_date" value="{{ form_data.start_date | default('') }}" 
+                           placeholder="e.g., 2024-01-01" required>
+                </div>
+                <div class="form-group">
+                    <label for="end_date">End Date (YYYY-MM-DD)</label>
+                    <input type="text" name="end_date" id="end_date" value="{{ form_data.end_date | default('') }}" 
+                           placeholder="e.g., 2025-04-29" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit">Fetch Data</button>
+                </div>
+            </form>
+        </div>
+
+        {% if errors %}
+            <div class="error-message">
+                <ul>
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% if historical_data %}
+            <div class="results-container">
+                <h2>Results for {{ historical_data.Ticker }}</h2>
+                <p>Showing top 30 entries</p>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Open</th>
+                            <th>High</th>
+                            <th>Low</th>
+                            <th>Close</th>
+                            <th>Volume</th>
+                            <th>Dividends</th>
+                            <th>Stock Splits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in historical_data['Historical Data'][:30] %}
+                            <tr>
+                                <td>{{ entry.Date }}</td>
+                                <td>{{ entry.Open | round(2) }}</td>
+                                <td>{{ entry.High | round(2) }}</td>
+                                <td>{{ entry.Low | round(2) }}</td>
+                                <td>{{ entry.Close | round(2) }}</td>
+                                <td>{{ entry.Volume | int }}</td>
+                                <td>{{ entry.Dividends | round(2) }}</td>
+                                <td>{{ entry['Stock Splits'] | round(2) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if filename %}
+                    <div class="download-section">
+                        <a href="{{ url_for('app5.download_file', filename=filename) }}">Download JSON</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

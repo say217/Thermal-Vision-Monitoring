@@ -1,0 +1,21 @@
+
+
+
+ flask==3.1.1, sqlalchemy==2.0.41, mysql-connector-python==9.6.0, opencv-python==4.10.0.84, google-generativeai==0.8.5, python-dotenv==1.1.1, pyttsx3== 2.99,  ultralytics==8.3.195           
+
+
+
+Project operation cheatsheet
+1. Activate the virtual environment:
+	- Windows PowerShell: .\venv\Scripts\Activate.ps1
+2. Install/update dependencies: pip install -r requirements.txt
+3. Configure environment variables (can be placed in .env at project root):
+	- SECRET_KEY, MYSQL_HOST/USER/PASSWORD/DATABASE (default thermoai_user_db), SMTP_* values, GOOGLE_API_KEY or GEMINI_API_KEY for the AI agent.
+4. Initialize the MySQL schema if needed using the flask shell or an external tool pointing to thermoai_user_db.
+5. Launch the server from the workspace root: python "Project\run.py"
+6. Access endpoints in the browser:
+	- /app2/login for auth, /app1/home and other appN prefixes for their respective dashboards.
+7. Watch the terminal for AGENT logs; if rate limits occur the system falls back to raw activity logs automatically.
+
+
+

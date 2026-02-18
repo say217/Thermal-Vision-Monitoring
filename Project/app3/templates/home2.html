@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Thermal Vision - Live Detection</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Manrope:wght@400;600;700&display=swap');
+    :root {
+      --bg: #050506;
+      --bg-2: #0b0b0d;
+      --panel: #101114;
+      --panel-2: #0a0b0d;
+      --ink: #f6f6f7;
+      --muted: #8c8f96;
+      --accent: #c9b48a;
+      --accent-2: #6bd4c5;
+      --accent-3: #5aa0ff;
+      --matte: rgba(12, 13, 16, 0.92);
+      --matte-2: rgba(9, 10, 12, 0.9);
+      --glow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 12px 28px rgba(0, 0, 0, 0.55);
+      --edge: rgba(255, 255, 255, 0.08);
+      --edge-strong: rgba(255, 255, 255, 0.14);
+      --header-h: 64px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: radial-gradient(circle at 20% 20%, rgba(201, 180, 138, 0.08), transparent 46%),
+        radial-gradient(circle at 85% 10%, rgba(90, 160, 255, 0.08), transparent 42%),
+        radial-gradient(circle at 10% 90%, rgba(107, 212, 197, 0.06), transparent 40%),
+        linear-gradient(135deg, #040405 0%, var(--bg) 55%, #07080a 100%);
+      min-height: 100vh;
+      letter-spacing: 0.2px;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0.02) 0px,
+        rgba(255, 255, 255, 0.02) 1px,
+        transparent 1px,
+        transparent 5px
+      );
+      opacity: 0.25;
+      pointer-events: none;
+      mix-blend-mode: soft-light;
+      z-index: 0;
+    }
+
+    body > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: var(--header-h);
+      padding: 0 18px;
+      border-bottom: 1px solid var(--edge);
+      background: linear-gradient(180deg, rgba(12, 13, 16, 0.98), rgba(7, 8, 10, 0.92));
+      backdrop-filter: blur(8px);
+      box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      color: #f3f0e8;
+    }
+
+    header nav a {
+      color: var(--muted);
+      text-decoration: none;
+      margin-left: 10px;
+      font-size: 13px;
+      letter-spacing: 0.4px;
+      position: relative;
+    }
+
+    header nav a:hover {
+      color: var(--ink);
+    }
+
+    header nav a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -6px;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    header nav a:hover::after {
+      opacity: 0.7;
+    }
+
+    .stop-mini {
+      border: 1px solid var(--edge-strong);
+      background: rgba(12, 13, 16, 0.75);
+      color: var(--ink);
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-left: 10px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 7fr 3fr;
+      gap: 0;
+      padding: 0;
+      height: calc(100vh - var(--header-h));
+    }
+
+    .layout > section {
+      height: 100%;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      padding: 16px;
+      background: linear-gradient(160deg, rgba(15, 16, 19, 0.98), rgba(8, 9, 11, 0.98));
+      border-bottom: 1px solid var(--edge);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    }
+
+    .controls input[type="file"] {
+      display: none;
+    }
+
+    .btn {
+      border: none;
+      padding: 10px 12px;
+      border-radius: 40px;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      color: #ffffff;
+      border: 1.5px solid #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: 0.3px;
+      transition: background-color 0.25s ease, color 0.25s ease, transform 0.15s ease;
+    }
+
+    .btn svg {
+      width: 15px;
+      height: 15px;
+      fill: currentColor;
+      flex: 0 0 auto;
+    }
+
+    .btn:hover {
+      background-color: #ffffff;
+      color: #000000;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn.secondary {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--edge-strong);
+      box-shadow: none;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .upload-box {
+      display: grid;
+      gap: 10px;
+    }
+
+    .upload-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 140px;
+      border-radius: 16px;
+      border: 1px dashed rgba(255, 255, 255, 0.18);
+      background: linear-gradient(135deg, rgba(6, 7, 9, 0.95), rgba(14, 16, 19, 0.98));
+      cursor: pointer;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    }
+
+    .upload-label::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(201, 180, 138, 0.22), transparent 60%),
+        radial-gradient(circle at 80% 100%, rgba(90, 160, 255, 0.12), transparent 55%);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .upload-label:hover {
+      border-color: rgba(201, 180, 138, 0.7);
+      transform: translateY(-2px);
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5);
+    }
+
+    .upload-label:hover::after {
+      opacity: 1;
+    }
+
+    .upload-icon {
+      width: 30px;
+      height: 22px;
+      border: 2px solid rgba(255, 255, 255, 0.85);
+      border-radius: 5px;
+      position: relative;
+      margin-bottom: 8px;
+      z-index: 1;
+      box-shadow: 0 0 10px rgba(201, 180, 138, 0.15);
+    }
+
+    .upload-icon::before {
+      content: "";
+      position: absolute;
+      top: -7px;
+      left: 7px;
+      width: 12px;
+      height: 6px;
+      border: 2px solid var(--ink);
+      border-bottom: none;
+      border-radius: 4px 4px 0 0;
+    }
+
+    .upload-text {
+      font-size: 12px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--ink);
+      z-index: 1;
+    }
+
+    .upload-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+      z-index: 1;
+    }
+
+    .video-preview {
+      position: relative;
+      width: 100%;
+      height: 160px;
+      border-radius: 16px;
+      overflow: hidden;
+      display: none;
+      background: #000;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05), 0 16px 30px rgba(0, 0, 0, 0.55);
+    }
+
+    .video-preview video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(100%) contrast(1.1);
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(9, 10, 12, 0.85);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 22px;
+      text-align: center;
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .remove-btn:hover {
+      background: #fff;
+      color: #000;
+      transform: scale(1.05);
+    }
+
+    .streams {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      padding: 4px;
+      height: 100%;
+      background: rgba(6, 7, 9, 0.2);
+    }
+
+    .stream-card {
+      background: linear-gradient(180deg, rgba(15, 16, 19, 0.98), rgba(8, 9, 11, 0.96));
+      border: 1px solid var(--edge);
+      overflow: hidden;
+      position: relative;
+      border-radius: 0;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+    }
+
+    .stream-card.agent {
+      grid-column: 1 / span 2;
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 8px;
+      overflow: auto;
+    }
+
+    .stream-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='7' width='13' height='10' rx='2'/><polygon points='16,9 21,7 21,17 16,15'/></svg>") center/46px 46px no-repeat;
+      opacity: 0.35;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 1;
+    }
+
+    .stream-card.agent::before {
+      display: none;
+    }
+
+    .stream-card.has-stream::before {
+      opacity: 0;
+    }
+
+    .stream-label {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      letter-spacing: 0.3px;
+      color: #ffffff;
+      background: rgba(8, 9, 11, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 10px;
+      text-transform: uppercase;
+      backdrop-filter: blur(6px);
+      z-index: 2;
+    }
+
+    .stream-label svg {
+      width: 12px;
+      height: 12px;
+      fill: currentColor;
+      opacity: 0.9;
+    }
+
+    .stream-card img {
+      width: 100%;
+      height: 100%;
+      display: none;
+      background: #060709;
+      object-fit: contain;
+      filter: saturate(1.08) contrast(1.05);
+      border-radius: 0;
+      position: relative;
+      z-index: 0;
+    }
+
+    .stream-card.has-stream img {
+      display: block;
+    }
+
+    .agent-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .agent-header small {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: none;
+    }
+
+    .agent-summary {
+      margin: 0;
+      font-size: 13px;
+      color: #dfe1e6;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+
+    .agent-summary-line {
+      margin: 0;
+      color: inherit;
+      line-height: 1.4;
+    }
+
+    .agent-summary-bullets {
+      margin: 0;
+      padding-left: 18px;
+      color: inherit;
+    }
+
+    .agent-summary-bullets li {
+      margin: 2px 0;
+    }
+
+    .agent-list {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      font-family: "JetBrains Mono", "Consolas", monospace;
+      font-size: 12px;
+      color: #c7d7de;
+      padding: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      background: rgba(3, 4, 6, 0.45);
+      min-height: 100px;
+    }
+
+    #agentCard.fallback .agent-list {
+      display: flex;
+    }
+
+    .agent-item {
+      margin: 0;
+      line-height: 1.35;
+    }
+
+    .agent-item-muted {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .agent-bullets {
+      margin: 0;
+      padding-left: 20px;
+      list-style: disc;
+    }
+
+    .agent-bullets li {
+      margin: 2px 0;
+    }
+
+    .side-panel {
+      background: linear-gradient(180deg, rgba(15, 16, 19, 0.98), rgba(8, 9, 11, 0.98));
+      border-left: 1px solid var(--edge);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      min-height: 100%;
+      box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .log-box {
+      flex: 1;
+      background: linear-gradient(180deg, rgba(8, 9, 11, 0.95), rgba(6, 7, 9, 0.9));
+      padding: 14px;
+      font-family: "JetBrains Mono", "Consolas", monospace;
+      font-size: 12px;
+      color: #c7d7de;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      border-top: 1px solid var(--edge);
+      scrollbar-color: rgba(201, 180, 138, 0.6) transparent;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .log-box.fade-in {
+      animation: logFade 0.3s ease;
+    }
+
+    @keyframes logFade {
+      from {
+        opacity: 0.4;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1100px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 800px) {
+      .streams {
+        grid-template-columns: 1fr;
+        grid-template-rows: none;
+      }
+      .stream-card.agent {
+        grid-column: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Thermal Vision - Autonomous Detection</h1>
+    <nav>
+      <a href="{{ url_for('app1.home') }}">Home</a>
+      <a href="{{ url_for('app4.page') }}">App4</a>
+      <a href="{{ url_for('app5.page') }}">App5</a>
+      <a href="{{ url_for('app6.page') }}">App6</a>
+      <a href="{{ url_for('app7.page') }}">App7</a>
+      <a href="{{ url_for('app2.logout') }}">Logout</a>
+      <button class="stop-mini" type="button" id="stopMini">Stop</button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section>
+      <div class="streams">
+        <div class="stream-card">
+          <div class="stream-label">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="10" width="4" height="11" rx="1"></rect>
+              <rect x="10" y="6" width="4" height="15" rx="1"></rect>
+              <rect x="17" y="3" width="4" height="18" rx="1"></rect>
+            </svg>
+            Thermal Detection
+          </div>
+          <img id="streamColor" alt="Thermal stream" />
+        </div>
+        <div class="stream-card">
+          <div class="stream-label">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="10" width="4" height="11" rx="1"></rect>
+              <rect x="10" y="6" width="4" height="15" rx="1"></rect>
+              <rect x="17" y="3" width="4" height="18" rx="1"></rect>
+            </svg>
+            Grad-CAM Overlay
+          </div>
+          <img id="streamExplain" alt="Explain stream" />
+        </div>
+        <div class="stream-card agent" id="agentCard">
+          <div class="agent-header">
+            <span>Agent Monitoring Online</span>
+            <small id="agentTimestamp">Awaiting session...</small>
+          </div>
+          <div class="agent-summary" id="agentSummaryText">
+            AI activity insights will populate here once a video is running.
+          </div>
+          <div class="agent-list" id="agentList">
+            <p class="agent-item agent-item-muted">No activity yet.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side-panel">
+      <form id="uploadForm" class="controls">
+        <div class="upload-box">
+          <label class="upload-label" id="uploadLabel">
+            <div class="upload-icon"></div>
+            <div class="upload-text">Upload Video</div>
+            <div class="upload-sub">MP4 · WEBM · MOV</div>
+            <input type="file" name="video" id="videoInput" accept="video/*" required />
+          </label>
+          <div class="video-preview" id="previewBox">
+            <video id="videoPreview" muted loop></video>
+            <button class="remove-btn" type="button" id="removeBtn">×</button>
+          </div>
+        </div>
+        <button class="btn" type="submit">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="10" width="4" height="11" rx="1"></rect>
+            <rect x="10" y="6" width="4" height="15" rx="1"></rect>
+            <rect x="17" y="3" width="4" height="18" rx="1"></rect>
+          </svg>
+          Analyze
+        </button>
+        <span class="status" id="statusText">Idle</span>
+      </form>
+
+      <div id="logBox" class="log-box hidden">Waiting for logs...</div>
+    </aside>
+  </main>
+
+  <script>
+    const uploadForm = document.getElementById('uploadForm');
+    const videoInput = document.getElementById('videoInput');
+    const statusText = document.getElementById('statusText');
+    const logBox = document.getElementById('logBox');
+    const stopMini = document.getElementById('stopMini');
+    const previewBox = document.getElementById('previewBox');
+    const videoPreview = document.getElementById('videoPreview');
+    const removeBtn = document.getElementById('removeBtn');
+    const uploadLabel = document.getElementById('uploadLabel');
+    const agentCard = document.getElementById('agentCard');
+    const agentSummaryEl = document.getElementById('agentSummaryText');
+    const agentListEl = document.getElementById('agentList');
+    const agentTimestampEl = document.getElementById('agentTimestamp');
+    let previewUrl = null;
+    let lastLogSeq = 0;
+
+    const streams = {
+      color: document.getElementById('streamColor'),
+      explain: document.getElementById('streamExplain')
+    };
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function markdownToHtml(text, options = {}) {
+      const paragraphClass = options.paragraphClass || 'agent-item';
+      const listClass = options.listClass || 'agent-bullets';
+      const escaped = escapeHtml(text);
+      let html = escaped
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>');
+      const lines = html.split(/\n+/);
+      const bulletLines = lines.filter((line) => /^\s*[-*]\s+/.test(line));
+      if (bulletLines.length && bulletLines.length === lines.length) {
+        const lis = bulletLines
+          .map((line) => line.replace(/^\s*[-*]\s+/, ''))
+          .map((line) => `<li>${line}</li>`)
+          .join('');
+        return `<ul class="${listClass}">${lis}</ul>`;
+      }
+      return `<p class="${paragraphClass}">${html.replace(/\n/g, '<br>')}</p>`;
+    }
+
+    function renderAgentRows(lines, active) {
+      agentListEl.innerHTML = '';
+      if (!lines.length) {
+        const empty = document.createElement('p');
+        empty.className = 'agent-item agent-item-muted';
+        empty.textContent = active ? 'No recent human detections.' : 'No activity yet.';
+        agentListEl.appendChild(empty);
+        return;
+      }
+      lines.forEach((text) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'agent-item-wrapper';
+        wrapper.innerHTML = markdownToHtml(text);
+        agentListEl.appendChild(wrapper);
+      });
+    }
+
+    function renderAgentSummaryText(text, useMarkdown = false) {
+      if (useMarkdown && text) {
+        agentSummaryEl.innerHTML = markdownToHtml(text, {
+          paragraphClass: 'agent-summary-line',
+          listClass: 'agent-summary-bullets'
+        });
+      } else {
+        agentSummaryEl.textContent = text || '';
+      }
+    }
+
+    function setAgentCardFallback(isFallback) {
+      if (!agentCard) {
+        return;
+      }
+      agentCard.classList.toggle('fallback', Boolean(isFallback));
+    }
+
+    function setStreamCardState(img, hasStream) {
+      const card = img.closest('.stream-card');
+      if (!card) {
+        return;
+      }
+      card.classList.toggle('has-stream', hasStream);
+    }
+
+    Object.values(streams).forEach((img) => {
+      img.addEventListener('load', () => setStreamCardState(img, true));
+      img.addEventListener('error', () => setStreamCardState(img, false));
+      setStreamCardState(img, false);
+    });
+
+    function startStreams() {
+      const cacheBust = Date.now();
+      streams.color.src = `{{ url_for('app3.stream', kind='color') }}?t=${cacheBust}`;
+      streams.explain.src = `{{ url_for('app3.stream', kind='explain') }}?t=${cacheBust}`;
+    }
+
+    function stopStreams() {
+      streams.color.src = '';
+      streams.explain.src = '';
+      Object.values(streams).forEach((img) => setStreamCardState(img, false));
+    }
+
+    function setUiRunning(isRunning) {
+      uploadForm.classList.toggle('hidden', isRunning);
+      logBox.classList.toggle('hidden', !isRunning);
+      if (!isRunning) {
+        logBox.textContent = 'Waiting for logs...';
+        logBox.classList.remove('fade-in');
+        agentTimestampEl.textContent = 'System idle';
+        renderAgentSummaryText('Awaiting a new analysis session to begin monitoring.');
+        renderAgentRows([], false);
+        setAgentCardFallback(false);
+      }
+    }
+
+    let isRunning = false;
+    let lastEventTs = null;
+
+    async function refreshLogs() {
+      try {
+        const res = await fetch(`{{ url_for('app3.logs') }}?after=${lastLogSeq}`);
+        const data = await res.json();
+        if (data.ok) {
+          if (data.reset) {
+            logBox.textContent = data.lines.join('\n') || 'No logs yet.';
+          } else if (data.lines && data.lines.length) {
+            const existing = logBox.textContent ? logBox.textContent.split('\n') : [];
+            const merged = existing.concat(data.lines);
+            const trimmed = merged.slice(-300);
+            logBox.textContent = trimmed.join('\n');
+          } else if (!logBox.textContent) {
+            logBox.textContent = 'No logs yet.';
+          }
+          if (typeof data.latest_seq === 'number') {
+            lastLogSeq = data.latest_seq;
+          }
+          logBox.scrollTop = logBox.scrollHeight;
+          logBox.classList.remove('fade-in');
+          void logBox.offsetWidth;
+          logBox.classList.add('fade-in');
+        }
+      } catch (err) {
+        logBox.textContent = 'Failed to load logs.';
+      }
+    }
+
+    async function refreshStatus() {
+      try {
+        const res = await fetch(`{{ url_for('app3.status') }}`);
+        const data = await res.json();
+        if (data.ok) {
+          const state = data.state || {};
+          statusText.textContent = state.running ? 'Running' : 'Idle';
+          if (state.error) {
+            statusText.textContent = `Error: ${state.error}`;
+          }
+          if (!state.running && isRunning) {
+            stopStreams();
+            setUiRunning(false);
+            isRunning = false;
+          }
+        }
+      } catch (err) {
+        statusText.textContent = 'Status unavailable';
+      }
+    }
+
+    async function refreshEvents() {
+      if (!isRunning) {
+        renderAgentSummaryText('Start an analysis run to see live AI monitoring here.');
+        agentTimestampEl.textContent = 'System idle';
+        renderAgentRows([], false);
+        return;
+      }
+      try {
+        const res = await fetch(`{{ url_for('app3.events') }}`);
+        const data = await res.json();
+        if (!data.ok) {
+          renderAgentSummaryText('Agent feed unavailable.');
+          renderAgentRows([], false);
+          setAgentCardFallback(true);
+          return;
+        }
+        const agentState = data.agent_state || {};
+        const agentOnline = Boolean(agentState.online);
+        const agentError = agentState.error;
+        setAgentCardFallback(!(agentOnline && !agentError));
+        if (data.latest_ts) {
+          lastEventTs = data.latest_ts;
+          agentTimestampEl.textContent = new Date(data.latest_ts).toLocaleString();
+        } else if (agentOnline && !agentError) {
+          agentTimestampEl.textContent = 'Awaiting detections...';
+        } else {
+          agentTimestampEl.textContent = 'System idle';
+        }
+        const fallbackLines = (data.summary || []).map((item) => {
+          if (item.summary) {
+            return item.summary;
+          }
+          const confText = item.confidence === null || item.confidence === undefined
+            ? 'unknown'
+            : Number(item.confidence).toFixed(2);
+          return `Human activity detected: Person ${item.person_id} was ` +
+            `${item.motion_state || 'present'} in frame ${item.frame_id} ` +
+            `(confidence ${confText}) at ${item.timestamp}.`;
+        });
+
+        if (agentOnline && !agentError) {
+          if (data.agent_summary) {
+            renderAgentSummaryText(data.agent_summary, true);
+          } else {
+            renderAgentSummaryText('Agent online — awaiting first summary.');
+          }
+          agentListEl.innerHTML = '';
+          const placeholder = document.createElement('p');
+          placeholder.className = 'agent-item agent-item-muted';
+          placeholder.textContent = 'AI summary active. Raw detections hidden.';
+          agentListEl.appendChild(placeholder);
+        } else {
+          if (agentError) {
+            renderAgentSummaryText(`Agent offline: ${agentError}`);
+          } else if (agentState.enabled === false) {
+            renderAgentSummaryText('AI assistance disabled. Showing raw detections.');
+          } else {
+            renderAgentSummaryText('AI summary unavailable. Showing raw detections.');
+          }
+          renderAgentRows(fallbackLines, true);
+        }
+      } catch (err) {
+        renderAgentSummaryText('Agent feed unavailable.');
+        renderAgentRows([], false);
+      }
+    }
+
+    uploadForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!videoInput.files.length) {
+        statusText.textContent = 'Select a video first.';
+        return;
+      }
+
+      statusText.textContent = 'Uploading...';
+      uploadForm.classList.add('is-uploading');
+
+      try {
+        const formData = new FormData();
+        formData.append('video', videoInput.files[0]);
+        const res = await fetch(`{{ url_for('app3.upload_video') }}`, {
+          method: 'POST',
+          body: formData
+        });
+        let data = {};
+        try {
+          data = await res.json();
+        } catch (_) {
+          throw new Error('Upload failed');
+        }
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || 'Upload failed');
+        }
+
+        isRunning = true;
+        lastLogSeq = 0;
+        lastEventTs = null;
+        setUiRunning(true);
+        logBox.textContent = 'Initializing...';
+        startStreams();
+        agentTimestampEl.textContent = 'Initializing feed...';
+        renderAgentSummaryText('Uploading complete. Analyzer is starting.');
+        renderAgentRows([], true);
+        setAgentCardFallback(false);
+        statusText.textContent = 'Running';
+        refreshStatus();
+        refreshLogs();
+        refreshEvents();
+      } catch (error) {
+        stopStreams();
+        setUiRunning(false);
+        isRunning = false;
+        lastEventTs = null;
+        renderAgentSummaryText('Upload failed. Please try again.');
+        renderAgentRows([], false);
+        setAgentCardFallback(false);
+        statusText.textContent = error.message || 'Upload failed';
+      } finally {
+        uploadForm.classList.remove('is-uploading');
+      }
+    });
+
+    videoInput.addEventListener('change', () => {
+      const file = videoInput.files[0];
+      if (!file) {
+        return;
+      }
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      previewUrl = URL.createObjectURL(file);
+      videoPreview.src = previewUrl;
+      videoPreview.play().catch(() => {});
+      previewBox.style.display = 'block';
+      uploadLabel.style.display = 'none';
+    });
+
+    removeBtn.addEventListener('click', () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        previewUrl = null;
+      }
+      videoPreview.pause();
+      videoPreview.src = '';
+      videoInput.value = '';
+      previewBox.style.display = 'none';
+      uploadLabel.style.display = 'flex';
+    });
+
+    stopMini.addEventListener('click', async () => {
+      await fetch(`{{ url_for('app3.stop') }}`, { method: 'POST' });
+      stopStreams();
+      setUiRunning(false);
+      isRunning = false;
+      lastEventTs = null;
+      statusText.textContent = 'Stopped';
+      agentTimestampEl.textContent = 'System idle';
+      renderAgentSummaryText('Monitoring paused.');
+      renderAgentRows([], false);
+      setAgentCardFallback(false);
+    });
+
+    setUiRunning(false);
+    refreshLogs();
+    refreshStatus();
+    setInterval(refreshLogs, 1000);
+    setInterval(refreshStatus, 1500);
+    setInterval(refreshEvents, 2000);
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
