@@ -35,7 +35,8 @@ try:
 except Exception:
     pass
 
-LOG_PATH = os.path.join(PROJECT_ROOT, "run.log")
+LOG_MAX_LINES = 1500
+LOG_PATH = os.path.join(PROJECT_ROOT, "app.log")
 STRUCT_LOG_PATH = os.path.join(PROJECT_ROOT, "run_structured.jsonl")
 logger = logging.getLogger("thermal_cam")
 logger.setLevel(logging.INFO)
@@ -44,7 +45,7 @@ logger.propagate = False
 
 file_handler = None
 struct_log_file = None
-log_buffer = deque(maxlen=1500)
+log_buffer = deque(maxlen=LOG_MAX_LINES)
 log_seq = 0
 log_lock = threading.Lock()
 tts_engine = None
@@ -81,12 +82,32 @@ def reset_logging():
 reset_logging()
 
 
+def _enforce_log_file_limit():
+    # Keep persistent log capped at LOG_MAX_LINES entries.
+    if LOG_MAX_LINES <= 0 or not os.path.exists(LOG_PATH):
+        return
+    try:
+        if file_handler:
+            file_handler.flush()
+        with open(LOG_PATH, "r+", encoding="utf-8") as fh:
+            lines = fh.readlines()
+            if len(lines) <= LOG_MAX_LINES:
+                return
+            fh.seek(0)
+            fh.writelines(lines[-LOG_MAX_LINES:])
+            fh.truncate()
+    except Exception:
+        pass
+
+
 def log(message):
     global log_seq
     logger.info(message)
     with log_lock:
         log_seq += 1
         log_buffer.append((log_seq, f"{datetime.now().strftime('%H:%M:%S')} | {message}"))
+        if log_seq > LOG_MAX_LINES:
+            _enforce_log_file_limit()
 
 
 def log_structured(payload):
