@@ -5,8 +5,8 @@ __pycache__/
 *.log
 .env
 .venv/
-uploads/
+
 test/
-images/
+
 venv/
 
