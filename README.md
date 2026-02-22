@@ -2,6 +2,7 @@
 
 
 <img width="1101" height="612" alt="Screenshot 2026-02-18 205325" src="https://github.com/user-attachments/assets/e1b7ac00-7401-4218-baed-97948eb5abef" />
+<img width="907" height="384" alt="image" src="https://github.com/user-attachments/assets/a06ccd73-1a70-4e2c-8fa3-55fd9e247b17" />
 
 
 Thermal Vision is a multi-module Flask platform fusing thermal object detection, user lifecycle management, and AI incident narration. Ultralytics YOLOv9 continuously analyzes a thermal feed, structured events are written to `run_structured.jsonl`, and a Gemini-powered agent summarizes activity while falling back to raw logs when rate limits occur. Each app blueprint (`app1`-`app7`) hosts a focused experience ranging from dashboards (`app1`) to auth flows (`app2`) and auxiliary analysis tools.
@@ -19,6 +20,7 @@ Thermal Vision is a multi-module Flask platform fusing thermal object detection,
 - Ultralytics YOLOv9 (`yolov9c.pt`) for detections
 - Google Gemini (`google-genai`) + `pyttsx3` for AI narration/TTS
 - Bootstrap-ready Jinja templates per app directory
+
 
 ### Quick Start
 1. **Create & activate a venv** (PowerShell example):
