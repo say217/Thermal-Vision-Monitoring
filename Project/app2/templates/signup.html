@@ -1,25 +1,699 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Sign Up</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHOENIX V9 - Sign Up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #000000;
+  --deep: #080808;
+  --graphite: #0e0e0e;
+  --charcoal: #161616;
+  --steel: #1f1f1f;
+  --border: #282828;
+  --border-light: #383838;
+  --white: #f5f5f0;
+  --off-white: #c8c8c0;
+  --gray: #888880;
+  --gray-dim: #555550;
+  --orange: #e05a00;
+  --orange-glow: #ff6a00;
+  --orange-dim: #8b3300;
+  --amber: #ff9a3c;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-body: 'Outfit', sans-serif;
+  --radius: 10px;
+  --radius-lg: 20px;
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--font-body);
+  overflow: hidden;
+}
+
+::selection { background: var(--orange); color: #000; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--deep); }
+::-webkit-scrollbar-thumb { background: var(--orange-dim); border-radius: 2px; }
+
+.bg-base {
+  position: fixed; inset: 0; z-index: 0;
+  background: var(--black);
+}
+
+.bg-grid {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.013) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.013) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+.bg-scan {
+  position: fixed; inset: 0; z-index: 2; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px, transparent 3px,
+    rgba(255,106,0,0.008) 3px, rgba(255,106,0,0.008) 4px
+  );
+}
+
+#wave-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+#bg-canvas {
+  position: fixed; inset: 0; z-index: 4; pointer-events: none; opacity: 0.3;
+}
+
+.page {
+  position: relative; z-index: 10;
+  width: 100%; height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-logo {
+  position: fixed;
+  top: 28px; left: 48px;
+  z-index: 100;
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 3px;
+  color: var(--white);
+}
+
+.logo-icon {
+  width: 30px; height: 30px;
+  border: 1.5px solid var(--orange);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 14px rgba(255,106,0,0.35);
+}
+
+.logo-dot {
+  width: 8px; height: 8px;
+  background: var(--orange);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,106,0,0.7); }
+  50% { box-shadow: 0 0 0 6px rgba(255,106,0,0); }
+}
+
+.login-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: rgba(14,14,14,0.72);
+  border: 1px solid rgba(56,56,56,0.7);
+  border-radius: var(--radius-lg);
+  padding: 44px 40px 40px;
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  box-shadow:
+    0 0 0 1px rgba(255,106,0,0.06),
+    0 8px 60px rgba(0,0,0,0.7),
+    0 0 80px rgba(255,80,0,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  animation: card-in 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,106,0,0.7), transparent);
+  border-radius: 1px;
+}
+
+.login-card::after {
+  content: '';
+  position: absolute;
+  top: -1px; left: -1px;
+  width: 60px; height: 60px;
+  border-top: 1px solid rgba(255,106,0,0.4);
+  border-left: 1px solid rgba(255,106,0,0.4);
+  border-radius: var(--radius-lg) 0 0 0;
+  pointer-events: none;
+}
+
+.card-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.card-eyebrow::before {
+  content: '';
+  width: 18px; height: 1px;
+  background: var(--orange);
+  flex-shrink: 0;
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 40px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.card-sub {
+  font-size: 13px;
+  color: var(--gray);
+  font-weight: 300;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.flash-list {
+  list-style: none;
+  margin-bottom: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.flash-list li {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: #ff6060;
+  background: rgba(255,80,80,0.07);
+  border: 1px solid rgba(255,80,80,0.25);
+  border-left: 2px solid #ff4444;
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.flash-list li::before {
+  content: '';
+  width: 5px; height: 5px;
+  background: #ff4444;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(255,68,68,0.6);
+}
+
+.login-form {
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.field-wrap {
+  position: relative;
+  display: flex; flex-direction: column; gap: 7px;
+}
+
+.field-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gray);
+  padding-left: 2px;
+  transition: color var(--transition);
+}
+
+.field-wrap:focus-within .field-label {
+  color: var(--orange);
+}
+
+.input-box {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  opacity: 0.45;
+  transition: opacity var(--transition);
+  display: flex; align-items: center;
+}
+
+.field-wrap:focus-within .input-icon {
+  opacity: 1;
+}
+
+.login-form input[type="text"],
+.login-form input[type="email"],
+.login-form input[type="password"] {
+  width: 100%;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 13px 16px 13px 42px;
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  outline: none;
+  transition: all var(--transition);
+  letter-spacing: 0.3px;
+}
+
+.login-form input::placeholder {
+  color: var(--gray-dim);
+  font-weight: 300;
+}
+
+.login-form input:focus {
+  border-color: var(--orange);
+  background: rgba(255,106,0,0.04);
+  box-shadow: 0 0 0 3px rgba(255,106,0,0.1), 0 0 20px rgba(255,106,0,0.06);
+}
+
+.login-form input:hover:not(:focus) {
+  border-color: var(--border-light);
+  background: rgba(255,255,255,0.05);
+}
+
+.toggle-pw {
+  position: absolute;
+  right: 14px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--gray-dim);
+  display: flex; align-items: center;
+  transition: color var(--transition);
+}
+.toggle-pw:hover { color: var(--orange); }
+
+.btn-login {
+  margin-top: 8px;
+  width: 100%;
+  background: var(--orange);
+  color: #000;
+  border: none;
+  border-radius: var(--radius);
+  padding: 14px 24px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+
+.btn-login::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.btn-login:hover {
+  background: #ff6a00;
+  box-shadow: 0 0 36px rgba(255,106,0,0.5), 0 4px 20px rgba(0,0,0,0.4);
+  transform: translateY(-1px);
+}
+
+.btn-login:hover::before { opacity: 1; }
+
+.btn-login:active {
+  transform: translateY(0);
+  box-shadow: 0 0 20px rgba(255,106,0,0.3);
+}
+
+.btn-arrow {
+  transition: transform var(--transition);
+}
+.btn-login:hover .btn-arrow { transform: translateX(4px); }
+
+.divider {
+  display: flex; align-items: center; gap: 14px;
+  margin: 10px 0 2px;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 1px;
+  background: var(--border);
+}
+.divider span {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--gray-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.signup-link {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--gray);
+  font-weight: 300;
+}
+
+.signup-link a {
+  color: var(--off-white);
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(255,106,0,0.3);
+  padding-bottom: 1px;
+  transition: all var(--transition);
+}
+
+.signup-link a:hover {
+  color: var(--orange);
+  border-bottom-color: var(--orange);
+}
+
+.status-bar {
+  position: fixed;
+  bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 20px;
+  z-index: 100;
+  background: rgba(14,14,14,0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 40px;
+  padding: 8px 20px;
+}
+
+.status-item {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--gray-dim);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #00c864;
+  box-shadow: 0 0 6px rgba(0,200,100,0.6);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.status-dot.orange {
+  background: var(--orange);
+  box-shadow: 0 0 6px rgba(255,106,0,0.6);
+}
+
+.sep { width: 1px; height: 14px; background: var(--border); }
+
+@media (max-width: 500px) {
+  .login-card { margin: 20px; padding: 32px 24px 28px; }
+  .card-title { font-size: 32px; }
+  .site-logo { top: 20px; left: 20px; font-size: 20px; }
+  .status-bar { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+</style>
 </head>
 <body>
-    <h1>Sign Up</h1>
+<div class="bg-base"></div>
+<div class="bg-grid"></div>
+<div class="bg-scan"></div>
+<canvas id="wave-canvas"></canvas>
+<canvas id="bg-canvas"></canvas>
+
+<a href="{{ url_for('app1.home') }}" class="site-logo">
+  <div class="logo-icon"><div class="logo-dot"></div></div>
+  PHOENIX V9
+</a>
+
+<div class="page">
+  <div class="login-card">
+    <div class="card-eyebrow">New Operator</div>
+    <div class="card-title">Sign Up</div>
+    <p class="card-sub">Create your PHOENIX V9 access credentials</p>
+
     {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
+      {% if messages %}
+        <ul class="flash-list">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
     {% endwith %}
-    <form method="POST">
-        <input type="text" name="name" placeholder="Name" required>
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <button type="submit">Sign Up</button>
+
+    <form method="POST" class="login-form">
+      <div class="field-wrap">
+        <label class="field-label" for="name">Full Name</label>
+        <div class="input-box">
+          <span class="input-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20c1.4-3.8 4-6 8-6s6.6 2.2 8 6"/>
+            </svg>
+          </span>
+          <input type="text" id="name" name="name" placeholder="Operator Name" required autocomplete="name">
+        </div>
+      </div>
+
+      <div class="field-wrap">
+        <label class="field-label" for="email">Email Address</label>
+        <div class="input-box">
+          <span class="input-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </span>
+          <input type="email" id="email" name="email" placeholder="operator@phoenix.ai" required autocomplete="email">
+        </div>
+      </div>
+
+      <div class="field-wrap">
+        <label class="field-label" for="password">Password</label>
+        <div class="input-box">
+          <span class="input-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round">
+              <rect x="3" y="11" width="18" height="11" rx="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </span>
+          <input type="password" id="password" name="password" placeholder="Create a secure key" required autocomplete="new-password">
+          <button type="button" class="toggle-pw" id="togglePw" tabindex="-1" aria-label="Toggle password">
+            <svg id="eyeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login">
+        Create Account
+        <svg class="btn-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </button>
     </form>
-    <a href="{{ url_for('app2.login') }}">Already have an account? Login</a>
+
+    <div class="divider"><span>or</span></div>
+
+    <p class="signup-link">
+      Already registered? <a href="{{ url_for('app2.login') }}">Return to login</a>
+    </p>
+  </div>
+</div>
+
+<div class="status-bar">
+  <div class="status-item"><span class="status-dot"></span>System Online</div>
+  <div class="sep"></div>
+  <div class="status-item"><span class="status-dot orange"></span>Account Provisioning</div>
+  <div class="sep"></div>
+  <div class="status-item">PHOENIX V9 - NIGHTFLARE</div>
+</div>
+
+<script>
+const wc = document.getElementById('wave-canvas');
+const wctx = wc.getContext('2d');
+
+function resizeWave() {
+  wc.width = window.innerWidth;
+  wc.height = window.innerHeight;
+}
+resizeWave();
+window.addEventListener('resize', resizeWave);
+
+let t = 0;
+const bands = [
+  { phase: 0, speed: 0.0055, amp: 38, baseX: 0.52, color: [180, 45, 0], alpha: 0.82 },
+  { phase: 1.2, speed: 0.0070, amp: 30, baseX: 0.42, color: [210, 60, 0], alpha: 0.75 },
+  { phase: 2.1, speed: 0.0062, amp: 44, baseX: 0.33, color: [235, 78, 0], alpha: 0.68 },
+  { phase: 3.4, speed: 0.0080, amp: 26, baseX: 0.24, color: [255, 95, 5], alpha: 0.58 },
+  { phase: 0.7, speed: 0.0095, amp: 18, baseX: 0.16, color: [255, 120, 10], alpha: 0.42 },
+  { phase: 4.8, speed: 0.0110, amp: 14, baseX: 0.09, color: [255, 145, 30], alpha: 0.28 },
+  { phase: 1.9, speed: 0.0130, amp: 9, baseX: 0.04, color: [255, 175, 60], alpha: 0.16 }
+];
+
+function drawWave() {
+  wctx.clearRect(0, 0, wc.width, wc.height);
+  t += 1;
+  const W = wc.width;
+  const H = wc.height;
+
+  for (let b = 0; b < bands.length; b++) {
+    const band = bands[b];
+    const phase = band.phase + t * band.speed;
+
+    wctx.beginPath();
+    wctx.moveTo(0, 0);
+
+    const steps = Math.ceil(H / 2) + 4;
+    for (let i = 0; i <= steps; i++) {
+      const y = (i / steps) * (H + 80) - 40;
+      const diagX = band.baseX * W + (H * 0.5 - y);
+      const ripple =
+        band.amp * Math.sin(y * 0.014 + phase) +
+        band.amp * 0.45 * Math.sin(y * 0.031 + phase * 1.3 + 0.8) +
+        band.amp * 0.22 * Math.sin(y * 0.058 + phase * 0.7 + 1.6) +
+        band.amp * 0.12 * Math.sin(y * 0.092 + phase * 1.8 + 2.4);
+
+      const xBound = diagX + ripple;
+      wctx.lineTo(xBound, y);
+    }
+
+    wctx.lineTo(-200, H + 60);
+    wctx.lineTo(-200, -60);
+    wctx.closePath();
+
+    const [r, g, bl2] = band.color;
+    wctx.fillStyle = `rgba(${r},${g},${bl2},${band.alpha})`;
+    wctx.fill();
+  }
+
+  for (let e = 0; e < 3; e++) {
+    const eb = bands[e + 2];
+    const phase = eb.phase + t * eb.speed;
+    const brightness = e === 0 ? 1 : e === 1 ? 0.55 : 0.28;
+    const lineW = e === 0 ? 2.5 : e === 1 ? 1.5 : 0.8;
+
+    wctx.beginPath();
+    const steps = Math.ceil(H / 2) + 4;
+    let first = true;
+    for (let i = 0; i <= steps; i++) {
+      const y = (i / steps) * (H + 80) - 40;
+      const diagX = eb.baseX * W + (H * 0.5 - y);
+      const ripple =
+        eb.amp * Math.sin(y * 0.014 + phase) +
+        eb.amp * 0.45 * Math.sin(y * 0.031 + phase * 1.3 + 0.8) +
+        eb.amp * 0.22 * Math.sin(y * 0.058 + phase * 0.7 + 1.6) +
+        eb.amp * 0.12 * Math.sin(y * 0.092 + phase * 1.8 + 2.4);
+      const xBound = diagX + ripple;
+      if (first) { wctx.moveTo(xBound, y); first = false; }
+      else { wctx.lineTo(xBound, y); }
+    }
+    wctx.strokeStyle = `rgba(255, ${120 + e * 22}, ${e * 10}, ${0.55 * brightness})`;
+    wctx.lineWidth = lineW;
+    wctx.stroke();
+  }
+
+  requestAnimationFrame(drawWave);
+}
+drawWave();
+
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeParticles() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeParticles();
+window.addEventListener('resize', resizeParticles);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.25;
+    this.vy = (Math.random() - 0.5) * 0.25;
+    this.alpha = Math.random() * 0.30 + 0.04;
+    this.r = Math.random() * 1.2 + 0.4;
+    this.orange = Math.random() > 0.7;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+      this.reset();
+    }
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = this.orange
+      ? `rgba(255,106,0,${this.alpha})`
+      : `rgba(200,200,190,${this.alpha * 0.35})`;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 80; i++) {
+  particles.push(new Particle());
+}
+
+(function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach((p) => { p.update(); p.draw(); });
+  requestAnimationFrame(animateParticles);
+})();
+
+const pw = document.getElementById('password');
+const toggleBtn = document.getElementById('togglePw');
+const eyeIcon = document.getElementById('eyeIcon');
+
+if (pw && toggleBtn && eyeIcon) {
+  toggleBtn.addEventListener('click', () => {
+    const isText = pw.type === 'text';
+    pw.type = isText ? 'password' : 'text';
+    eyeIcon.innerHTML = isText
+      ? `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`
+      : `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+  });
+}
+</script>
 </body>
 </html>

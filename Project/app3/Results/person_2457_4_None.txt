@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:08:41.495Z
+Frame ID: 2457
+Person ID: det-2457-4
+Detection Index: 4
+Bounding Box: w=8, h=21
+Confidence: 0.2342
+Motion State: None
+Temperature Mean: 74.8274
+Temperature Max: 112.0000

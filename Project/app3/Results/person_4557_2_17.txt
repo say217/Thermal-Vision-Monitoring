@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:17:35.648Z
+Frame ID: 4557
+Person ID: 17
+Detection Index: 2
+Bounding Box: w=15, h=48
+Confidence: 0.7607
+Motion State: moving
+Temperature Mean: 140.2528
+Temperature Max: 255.0000

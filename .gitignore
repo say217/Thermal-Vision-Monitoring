@@ -10,3 +10,7 @@ test/
 
 venv/
 
+Project/.model_cache/
+Project/model/
+*.pt
+*.mp4

@@ -1,9 +1,83 @@
-# Thermal Vision Monitoring Platform
+# PHONEIX V9 is Thermal Vision Monitoring Platform   
 
 
 <img width="1101" height="612" alt="Screenshot 2026-02-18 205325" src="https://github.com/user-attachments/assets/e1b7ac00-7401-4218-baed-97948eb5abef" />
 <img width="907" height="384" alt="image" src="https://github.com/user-attachments/assets/a06ccd73-1a70-4e2c-8fa3-55fd9e247b17" />
+Welcome to NightFlare!
 
+NightFlare is a next-generation surveillance system designed to keep you safe and informed, day and night. Our platform combines advanced technology with easy-to-understand features, making it accessible for everyone.
+
+**Technology Stack**
+
+- Python 3.10
+- Flask 3.1
+- Flask-SQLAlchemy 3.1
+- MySQL + mysql-connector-python 9.6
+- Ultralytics YOLOv9c (thermal detection)
+- Ultralytics YOLOv8 (RGB detection)
+- Google Gemini (AI summaries)
+- pyttsx3 (text-to-speech)
+- Bootstrap-ready Jinja templates
+
+
+
+**What problem does Thermal Vision solve?**
+
+Traditional surveillance systems often struggle in challenging conditions—darkness, smoke, fog, or when rapid response is needed for emergencies like wildfires. Thermal Vision overcomes these limitations by using smart thermal imaging and AI-driven detection, ensuring you never miss a critical event. Whether it’s monitoring remote areas, detecting people in low visibility, or spotting wildfires before they spread, our system provides reliable protection where others fall short.
+
+**Where and why is it useful?**
+
+Thermal Vision is ideal for:
+- Forests and wildland areas, for early wildfire detection
+- Industrial sites, to monitor safety and prevent accidents
+- Residential and commercial properties, for 24/7 security
+- Public spaces, to track movement and ensure safety
+- Any location where visibility is poor or risks are high
+
+By combining agentic monitoring, multi-model detection for day and night, and specialized wildfire surveillance, Thermal Vision delivers peace of mind and actionable alerts—no matter the environment or situation.
+### Features
+
+nference with YOLOv9 on thermal footage (gray + thermal colormap views)
+
+2.Real-time detection overlays with labels, confidence, and styling
+
+3.Per-frame detection logs with size (width/height) and confidence
+
+4.Person tracking across frames with stable ID
+
+5.Motion state classification for people (standing / moving)
+Human count logging (per frame + total)
+
+6. Density-over-time (rolling average of people in scene)
+
+7.Anomaly alerts:
+Thermal spike on a person (possible fire proximity)
+**What makes Thermal Vision special?**
+
+- **Agentic Monitoring:** Our system acts like a smart agent, constantly watching over your environment and alerting you to any unusual activity. It’s always on guard, so you don’t have to be.
+
+- **Multi-Model Detection:** We use a combination of models to ensure reliable detection in all conditions:
+   - **Day and Night Detection:** Whether it’s bright daylight or pitch-black night, our system adapts to provide clear and accurate monitoring.
+   - **Special Thermal Imaging for Wildfire Detection:** Our unique thermal imaging technology is specially designed to spot wildfires early, helping prevent disasters before they spread.
+
+- **Super Surveillance:** By combining these features, Thermal Vision offers a powerful, all-in-one solution for security and safety. It’s like having a team of experts watching over your property, ready to respond to any threat.
+
+**How it works:**
+
+Thermal Vision uses smart cameras and sensors to monitor your surroundings. When something unusual is detected—like a person, fire, or movement—the system sends you an alert. You can check live feeds, review past events, and stay informed from anywhere.
+
+
+**Why choose Thermal Vision?**
+
+- Easy to use, no technical expertise required
+- Works in all weather and lighting conditions—even in darkness, smoke, or fog
+- Early warning for wildfires and other emergencies
+- Peace of mind, knowing you’re always protected
+
+
+If you want a surveillance system that’s smart, reliable, and ready for anything, Thermal Vision is the answer.
+
+For more information or help, please contact our support team.
 
 Thermal Vision is a multi-module Flask platform fusing thermal object detection, user lifecycle management, and AI incident narration. Ultralytics YOLOv9 continuously analyzes a thermal feed, structured events are written to `run_structured.jsonl`, and a Gemini-powered agent summarizes activity while falling back to raw logs when rate limits occur. Each app blueprint (`app1`-`app7`) hosts a focused experience ranging from dashboards (`app1`) to auth flows (`app2`) and auxiliary analysis tools.
 

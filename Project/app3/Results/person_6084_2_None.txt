@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:18:27.023Z
+Frame ID: 6084
+Person ID: det-6084-2
+Detection Index: 2
+Bounding Box: w=17, h=56
+Confidence: 0.6887
+Motion State: None
+Temperature Mean: 185.5914
+Temperature Max: 255.0000

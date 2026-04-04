@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:17:44.614Z
+Frame ID: 4686
+Person ID: det-4686-4
+Detection Index: 4
+Bounding Box: w=13, h=37
+Confidence: 0.2770
+Motion State: None
+Temperature Mean: 152.2620
+Temperature Max: 218.0000

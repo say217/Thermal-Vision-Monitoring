@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:16:23.863Z
+Frame ID: 2379
+Person ID: det-2379-1
+Detection Index: 1
+Bounding Box: w=49, h=132
+Confidence: 0.8319
+Motion State: None
+Temperature Mean: 121.7086
+Temperature Max: 223.0000

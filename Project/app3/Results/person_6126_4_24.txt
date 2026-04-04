@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:18:29.145Z
+Frame ID: 6126
+Person ID: 24
+Detection Index: 4
+Bounding Box: w=18, h=45
+Confidence: 0.4522
+Motion State: moving
+Temperature Mean: 93.4025
+Temperature Max: 193.0000

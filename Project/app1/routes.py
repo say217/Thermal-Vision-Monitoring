@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, session, redirect, url_for
 from functools import wraps
 
-bp = Blueprint('app1', __name__, template_folder='templates')
+bp = Blueprint('app1', __name__, template_folder='templates', static_folder='static', static_url_path='/app1/static')
 
 def login_required(f):
     @wraps(f)

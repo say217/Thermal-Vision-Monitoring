@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:16:33.075Z
+Frame ID: 2652
+Person ID: det-2652-4
+Detection Index: 4
+Bounding Box: w=14, h=39
+Confidence: 0.3234
+Motion State: None
+Temperature Mean: 64.0421
+Temperature Max: 146.0000

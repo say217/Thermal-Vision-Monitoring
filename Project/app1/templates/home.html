@@ -1,17 +1,2324 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Home</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHOENIX V9 — AI Thermal Surveillance Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===========================
+   DESIGN SYSTEM
+=========================== */
+:root {
+  --black: #000000;
+  --deep: #080808;
+  --graphite: #0e0e0e;
+  --charcoal: #161616;
+  --steel: #1f1f1f;
+  --muted: #2a2a2a;
+  --border: #282828;
+  --border-light: #383838;
+  --white: #f5f5f0;
+  --off-white: #c8c8c0;
+  --gray: #888880;
+  --gray-dim: #555550;
+  --orange: #e05a00;
+  --orange-glow: #ff6a00;
+  --orange-soft: #c44a00;
+  --orange-dim: #8b3300;
+  --amber: #ff9a3c;
+  --amber-pale: rgba(255,106,0,0.08);
+  --amber-border: rgba(255,106,0,0.2);
+  --amber-glow: rgba(255,106,0,0.4);
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-body: 'Outfit', sans-serif;
+  --radius: 8px;
+  --radius-lg: 16px;
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+::selection { background: var(--orange); color: #000; }
+
+/* ===========================
+   SCROLLBAR
+=========================== */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--deep); }
+::-webkit-scrollbar-thumb { background: var(--orange-dim); border-radius: 2px; }
+
+/* ===========================
+   CANVAS BACKGROUND
+=========================== */
+#bg-canvas {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0; pointer-events: none;
+  opacity: 0.35;
+}
+
+/* ===========================
+   NAVBAR
+=========================== */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 60px;
+  transition: all 0.4s ease;
+}
+
+nav.scrolled {
+  background: rgba(6,6,6,0.92);
+  backdrop-filter: blur(20px);
+  padding: 14px 60px;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 0 40px rgba(255,106,0,0.06);
+}
+
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 3px;
+  color: var(--white);
+  text-decoration: none;
+  display: flex; align-items: center; gap: 12px;
+}
+
+.nav-logo .logo-icon {
+  width: 32px; height: 32px;
+  border: 1.5px solid var(--orange);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  box-shadow: 0 0 12px rgba(255,106,0,0.3);
+}
+
+.logo-dot {
+  width: 8px; height: 8px;
+  background: var(--orange);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,106,0,0.6); }
+  50% { box-shadow: 0 0 0 6px rgba(255,106,0,0); }
+}
+
+.nav-links {
+  display: flex; align-items: center; gap: 36px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--gray);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  transition: color var(--transition);
+  font-family: var(--font-mono);
+}
+
+.nav-links a:hover { color: var(--white); }
+
+.btn-primary {
+  background: var(--orange);
+  color: #000;
+  border: none;
+  padding: 10px 24px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.btn-primary:hover { 
+  background: var(--orange-glow); 
+  box-shadow: 0 0 30px rgba(255,106,0,0.5);
+  transform: translateY(-1px);
+}
+.btn-primary:hover::after { opacity: 1; }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--white);
+  border: 1px solid var(--border-light);
+  padding: 10px 24px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: all var(--transition);
+}
+
+.btn-secondary:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  box-shadow: 0 0 20px rgba(255,106,0,0.15);
+}
+
+/* ===========================
+   HERO
+=========================== */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 120px 60px 80px;
+  z-index: 1;
+  overflow: hidden;
+  gap: 0;
+}
+
+.hero-bird-wrap {
+  position: relative;
+  flex: 0 0 45%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 480px;
+}
+
+.phoenix-bird {
+  width: 340px;
+  height: 400px;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 0 40px rgba(255,106,0,0.5)) drop-shadow(0 0 80px rgba(255,60,0,0.25));
+  animation: bird-breathe 4s ease-in-out infinite;
+}
+
+@keyframes bird-breathe {
+  0%,100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 40px rgba(255,106,0,0.5)) drop-shadow(0 0 80px rgba(255,60,0,0.25)); }
+  50% { transform: translateY(-14px) scale(1.02); filter: drop-shadow(0 0 60px rgba(255,140,0,0.7)) drop-shadow(0 0 100px rgba(255,80,0,0.4)); }
+}
+
+.bird-glow-ring {
+  position: absolute;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,106,0,0.15);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation: ring-pulse 3s ease-in-out infinite;
+  z-index: 1;
+}
+
+.bird-glow-ring.ring2 {
+  width: 440px; height: 440px;
+  border-color: rgba(255,106,0,0.07);
+  animation-delay: 1s;
+  animation-duration: 4s;
+}
+
+@keyframes ring-pulse {
+  0%,100% { opacity: 0.4; transform: translate(-50%,-50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%,-50%) scale(1.04); }
+}
+
+.bird-flame-base {
+  position: absolute;
+  bottom: 20px; left: 50%;
+  transform: translateX(-50%);
+  width: 120px; height: 60px;
+  background: radial-gradient(ellipse, rgba(255,80,0,0.4) 0%, rgba(255,40,0,0.15) 50%, transparent 80%);
+  border-radius: 50%;
+  filter: blur(12px);
+  z-index: 1;
+  animation: flame-pulse 2s ease-in-out infinite;
+}
+
+@keyframes flame-pulse {
+  0%,100% { opacity: 0.5; transform: translateX(-50%) scaleX(1); }
+  50% { opacity: 1; transform: translateX(-50%) scaleX(1.2); }
+}
+
+.hero-content {
+  position: relative; z-index: 2;
+  flex: 0 0 50%;
+  padding-left: 40px;
+}
+
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 60% 70% at 22% 55%, rgba(255,80,0,0.07) 0%, transparent 65%),
+              radial-gradient(ellipse 40% 50% at 75% 40%, rgba(255,106,0,0.03) 0%, transparent 60%);
+}
+
+.scan-lines {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg,
+    transparent 0px, transparent 3px,
+    rgba(255,106,0,0.012) 3px, rgba(255,106,0,0.012) 4px
+  );
+}
+
+.grid-texture {
+  position: absolute; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.hero-content {
+  position: relative; z-index: 2;
+  max-width: 600px;
+  flex: 0 0 55%;
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 28px;
+}
+
+.hero-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 24px; height: 1px;
+  background: var(--orange);
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(38px, 5vw, 66px);
+  line-height: 0.95;
+  letter-spacing: 2px;
+  color: var(--white);
+  margin-bottom: 22px;
+  text-transform: uppercase;
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(245,245,240,0.3);
+}
+
+.hero h1 .highlight { color: var(--orange); }
+
+.hero-sub {
+  font-size: 14px;
+  color: var(--off-white);
+  line-height: 1.7;
+  max-width: 420px;
+  margin-bottom: 36px;
+  font-weight: 300;
+}
+
+.hero-ctas {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+
+.trust-strip {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+
+.trust-item {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 40px;
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--gray);
+  text-transform: uppercase;
+}
+
+.trust-item .dot {
+  width: 5px; height: 5px;
+  background: var(--orange);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* hero-visual removed - replaced by phoenix bird */
+
+/* ===========================
+   SECTION BASE
+=========================== */
+section {
+  position: relative; z-index: 1;
+}
+
+.section-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 60px;
+}
+
+.section-label {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 20px;
+}
+
+.section-label::before {
+  content: '';
+  display: inline-block;
+  width: 16px; height: 1px;
+  background: var(--orange);
+}
+
+h2.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 4vw, 60px);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+.section-body {
+  font-size: 15px;
+  color: var(--gray);
+  line-height: 1.7;
+  max-width: 560px;
+  font-weight: 300;
+}
+
+/* ===========================
+   WILDFIRE ALERT SECTION
+=========================== */
+.wildfire-alert-section {
+  padding: 100px 0;
+  border-top: 1px solid var(--border);
+}
+
+.wildfire-alert-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.wildfire-image-link {
+  display: block;
+  text-decoration: none;
+}
+
+.wildfire-image-holder {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  display: block;
+}
+
+.wildfire-copy .section-body {
+  max-width: none;
+}
+
+/* ===========================
+   VIDEO SPLIT SECTION
+=========================== */
+.video-section {
+  padding: 100px 0;
+  border-top: 1px solid var(--border);
+}
+
+.video-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.video-holder {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+  box-shadow: 0 0 60px rgba(0,0,0,0.7), 0 0 30px rgba(255,106,0,0.08);
+  aspect-ratio: 16/10;
+  background: var(--graphite);
+  cursor: none;
+  transition: box-shadow var(--transition);
+}
+
+.video-holder:hover {
+  box-shadow: 0 0 80px rgba(0,0,0,0.8), 0 0 50px rgba(255,106,0,0.15);
+}
+
+.video-holder img.demo-img {
+  position: absolute;
+  top: -5%;
+  left: -5%;
+  width: 110%;
+  height: 110%;
+  object-fit: cover;
+  display: block;
+}
+
+.video-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg,
+    rgba(255,106,0,0.06) 0%,
+    transparent 50%,
+    rgba(0,0,50,0.15) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.video-scan {
+  position: absolute; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,106,0,0.5) 40%, rgba(255,106,0,0.8) 50%, rgba(255,106,0,0.5) 60%, transparent 100%);
+  z-index: 2; pointer-events: none;
+  animation: video-scan 4s linear infinite;
+}
+
+@keyframes video-scan { 0% { top: -3px; } 100% { top: 100%; } }
+
+.video-corner {
+  position: absolute;
+  width: 20px; height: 20px;
+  z-index: 3; pointer-events: none;
+}
+
+.video-corner.tl { top: 12px; left: 12px; border-top: 2px solid var(--orange); border-left: 2px solid var(--orange); }
+.video-corner.tr { top: 12px; right: 12px; border-top: 2px solid var(--orange); border-right: 2px solid var(--orange); }
+.video-corner.bl { bottom: 12px; left: 12px; border-bottom: 2px solid var(--orange); border-left: 2px solid var(--orange); }
+.video-corner.br { bottom: 12px; right: 12px; border-bottom: 2px solid var(--orange); border-right: 2px solid var(--orange); }
+
+.video-status {
+  position: absolute; bottom: 14px; left: 14px;
+  display: flex; align-items: center; gap: 8px;
+  z-index: 3;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--off-white);
+  letter-spacing: 1.5px;
+  pointer-events: none;
+}
+
+.cursor-glow {
+  position: absolute;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(255,106,0,0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s;
+  opacity: 0;
+}
+
+.video-holder:hover .cursor-glow { opacity: 1; }
+
+.workflow-steps {
+  display: flex; flex-direction: column; gap: 24px;
+  margin-top: 32px;
+}
+
+.step {
+  display: flex; gap: 18px; align-items: flex-start;
+  opacity: 0; transform: translateX(20px);
+  transition: all 0.5s ease;
+}
+
+.step.visible { opacity: 1; transform: translateX(0); }
+
+.step-num {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--orange);
+  background: rgba(255,106,0,0.05);
+}
+
+.step-content h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+
+.step-content p {
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+/* ===========================
+   FEATURES
+=========================== */
+.features-section {
+  padding: 100px 0;
+  border-top: 1px solid var(--border);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-top: 60px;
+  border: 1px solid var(--border);
+}
+
+.feature-card {
+  background: var(--graphite);
+  padding: 36px 32px;
+  position: relative;
+  overflow: hidden;
+  transition: background var(--transition);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease, background 0.3s;
+}
+
+.feature-card.visible { opacity: 1; transform: translateY(0); }
+
+.feature-card:hover {
+  background: var(--charcoal);
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.feature-card:hover::before { opacity: 1; }
+
+.feature-icon {
+  width: 44px; height: 44px;
+  background: rgba(255,106,0,0.08);
+  border: 1px solid rgba(255,106,0,0.2);
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  margin-bottom: 20px;
+  transition: all var(--transition);
+}
+
+.feature-card:hover .feature-icon {
+  background: rgba(255,106,0,0.15);
+  box-shadow: 0 0 20px rgba(255,106,0,0.2);
+}
+
+.feature-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
+}
+
+.feature-card p {
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+/* ===========================
+   WHAT WE DO
+=========================== */
+.about-section {
+  padding: 100px 0;
+  border-top: 1px solid var(--border);
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  margin-top: 40px;
+}
+
+.stat-card {
+  background: var(--graphite);
+  padding: 32px 28px;
+  text-align: center;
+}
+
+.stat-card .stat-value {
+  font-family: var(--font-display);
+  font-size: 42px;
+  color: var(--orange);
+  letter-spacing: 2px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.stat-card .stat-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.about-text p {
+  font-size: 15px;
+  color: var(--gray);
+  line-height: 1.75;
+  margin-bottom: 20px;
+  font-weight: 300;
+}
+
+.about-text p:last-child { margin-bottom: 0; }
+
+/* ===========================
+   TIMELINE
+=========================== */
+.timeline-section {
+  padding: 100px 0;
+  border-top: 1px solid var(--border);
+}
+
+.timeline {
+  display: flex;
+  gap: 0;
+  margin-top: 60px;
+  position: relative;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 28px; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+}
+
+.timeline-item {
+  flex: 1;
+  padding: 0 24px;
+  position: relative;
+  opacity: 0; transform: translateY(20px);
+  transition: all 0.5s ease;
+}
+
+.timeline-item.visible { opacity: 1; transform: translateY(0); }
+
+.timeline-node {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--border-light);
+  background: var(--graphite);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+  transition: all var(--transition);
+}
+
+.timeline-item:hover .timeline-node {
+  border-color: var(--orange);
+  background: rgba(255,106,0,0.1);
+  box-shadow: 0 0 20px rgba(255,106,0,0.3);
+}
+
+.timeline-step-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 8px;
+}
+
+.timeline-item h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+
+.timeline-item p {
+  font-size: 12px;
+  color: var(--gray);
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+/* ===========================
+   USE CASES
+=========================== */
+.usecases-section {
+  padding: 100px 0;
+  border-top: 1px solid var(--border);
+}
+
+.usecases-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin-top: 60px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.usecase-card {
+  background: var(--graphite);
+  padding: 32px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: background var(--transition);
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease, background 0.3s;
+}
+
+.usecase-card.visible { opacity: 1; transform: translateY(0); }
+.usecase-card:hover { background: var(--charcoal); }
+
+.usecase-icon { 
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,106,0,0.06);
+  border: 1px solid rgba(255,106,0,0.15);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  transition: all var(--transition);
+}
+
+.usecase-card:hover .usecase-icon {
+  background: rgba(255,106,0,0.12);
+  box-shadow: 0 0 16px rgba(255,106,0,0.2);
+}
+
+.usecase-card h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.usecase-card p {
+  font-size: 12px;
+  color: var(--gray);
+  line-height: 1.55;
+  font-weight: 300;
+}
+
+.usecase-card::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.usecase-card:hover::after { opacity: 1; }
+
+/* ===========================
+   TECH STACK
+=========================== */
+.tech-section {
+  padding: 100px 0;
+  border-top: 1px solid var(--border);
+}
+
+.tech-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+  margin-top: 60px;
+}
+
+.tech-chips {
+  display: flex; flex-wrap: wrap; gap: 10px;
+}
+
+.tech-chip {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  transition: all var(--transition);
+  cursor: default;
+}
+
+.tech-chip:hover {
+  border-color: var(--orange);
+  background: rgba(255,106,0,0.05);
+  box-shadow: 0 0 16px rgba(255,106,0,0.1);
+}
+
+.chip-icon { font-size: 18px; }
+
+.chip-info { }
+.chip-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.chip-desc {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--gray-dim);
+  letter-spacing: 1px;
+}
+
+.tech-desc p {
+  font-size: 15px;
+  color: var(--gray);
+  line-height: 1.7;
+  margin-bottom: 20px;
+  font-weight: 300;
+}
+
+/* ===========================
+   COMMAND CENTER
+=========================== */
+.command-section {
+  padding: 100px 0;
+  border-top: 1px solid var(--border);
+}
+
+.command-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  margin-top: 60px;
+}
+
+.command-main {
+  background: var(--graphite);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.command-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.command-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gray);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.command-title::before {
+  content: '';
+  width: 8px; height: 8px;
+  background: var(--orange);
+  border-radius: 50%;
+  animation: pulse-dot 1.5s infinite;
+}
+
+.status-bar {
+  display: flex; gap: 8px; align-items: center;
+}
+
+.status-pill {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.status-pill.active {
+  background: rgba(0,200,100,0.1);
+  border: 1px solid rgba(0,200,100,0.3);
+  color: #00c864;
+}
+
+.status-pill.warning {
+  background: rgba(255,106,0,0.1);
+  border: 1px solid rgba(255,106,0,0.3);
+  color: var(--orange);
+}
+
+.detection-feed {
+  display: flex; flex-direction: column; gap: 8px;
+  max-height: 260px;
+  overflow: hidden;
+}
+
+.feed-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.02);
+  border-radius: var(--radius);
+  border-left: 2px solid transparent;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  animation: feed-in 0.4s ease;
+}
+
+@keyframes feed-in { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+.feed-item.person { border-left-color: var(--orange); }
+.feed-item.motion { border-left-color: #4488ff; }
+.feed-item.alert { border-left-color: #ff4444; }
+
+.feed-time { color: var(--gray-dim); flex-shrink: 0; }
+.feed-type {
+  color: var(--orange);
+  flex-shrink: 0;
+  min-width: 70px;
+}
+
+.feed-item.motion .feed-type { color: #4488ff; }
+.feed-item.alert .feed-type { color: #ff4444; }
+
+.feed-detail { color: var(--off-white); }
+.feed-conf {
+  margin-left: auto;
+  color: var(--gray-dim);
+  flex-shrink: 0;
+}
+
+.confidence-bars {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-top: 20px;
+}
+
+.conf-bar {
+  display: flex; align-items: center; gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.conf-label { color: var(--gray); min-width: 80px; }
+
+.conf-track {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.conf-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--orange-dim), var(--orange));
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+
+.conf-pct { color: var(--off-white); min-width: 36px; text-align: right; }
+
+.command-sidebar {
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+.ai-incident-card {
+  background: var(--graphite);
+  border: 1px solid rgba(255,106,0,0.2);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.ai-incident-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.ai-incident-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+
+.ai-incident-time {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--gray-dim);
+}
+
+.ai-incident-body {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--off-white);
+  line-height: 1.6;
+}
+
+.alert-items {
+  background: var(--graphite);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.alert-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.alert-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+.alert-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.alert-dot.red { background: #ff4444; box-shadow: 0 0 6px rgba(255,68,68,0.5); }
+.alert-dot.orange { background: var(--orange); box-shadow: 0 0 6px rgba(255,106,0,0.5); }
+.alert-dot.green { background: #00c864; box-shadow: 0 0 6px rgba(0,200,100,0.5); }
+
+.alert-text { color: var(--off-white); flex: 1; }
+.alert-time-label { color: var(--gray-dim); }
+
+/* ===========================
+   TESTIMONIALS
+=========================== */
+.testimonials-section {
+  padding: 100px 0;
+  border-top: 1px solid var(--border);
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 60px;
+}
+
+.testimonial-card {
+  background: var(--graphite);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 32px;
+  position: relative;
+  overflow: hidden;
+  opacity: 0; transform: translateY(20px);
+  transition: all 0.5s ease;
+}
+
+.testimonial-card.visible { opacity: 1; transform: translateY(0); }
+
+.testimonial-card::before {
+  content: '"';
+  position: absolute; top: 20px; right: 24px;
+  font-family: var(--font-display);
+  font-size: 80px;
+  color: rgba(255,106,0,0.06);
+  line-height: 1;
+}
+
+.testimonial-card:hover {
+  border-color: var(--border-light);
+  box-shadow: 0 0 30px rgba(0,0,0,0.4);
+}
+
+.quote-text {
+  font-size: 14px;
+  color: var(--off-white);
+  line-height: 1.7;
+  font-weight: 300;
+  margin-bottom: 24px;
+}
+
+.quote-author {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.author-avatar {
+  width: 36px; height: 36px;
+  background: var(--steel);
+  border-radius: 50%;
+  border: 1px solid var(--border-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+
+.author-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.author-role {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray-dim);
+  letter-spacing: 1px;
+}
+
+/* ===========================
+   FINAL CTA
+=========================== */
+.cta-section {
+  padding: 120px 0;
+  border-top: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(255,106,0,0.08) 0%, transparent 70%);
+}
+
+.cta-section .section-inner {
+  position: relative; z-index: 1;
+  text-align: center;
+}
+
+.cta-section h2 {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 6vw, 80px);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 20px;
+}
+
+.cta-section h2 span { color: var(--orange); }
+
+.cta-section p {
+  font-size: 16px;
+  color: var(--gray);
+  margin-bottom: 44px;
+  font-weight: 300;
+}
+
+.cta-buttons {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ===========================
+   FOOTER
+=========================== */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 60px 0 30px;
+  position: relative; z-index: 1;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 60px;
+  margin-bottom: 48px;
+}
+
+.footer-brand {
+  max-width: 280px;
+}
+
+.footer-brand .nav-logo {
+  margin-bottom: 16px;
+  display: inline-flex;
+}
+
+.footer-brand p {
+  font-size: 13px;
+  color: var(--gray-dim);
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+.footer-col h4 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 20px;
+}
+
+.footer-col ul { list-style: none; }
+.footer-col ul li { margin-bottom: 10px; }
+.footer-col ul a {
+  font-size: 13px;
+  color: var(--gray-dim);
+  text-decoration: none;
+  transition: color var(--transition);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.footer-col ul a:hover { color: var(--orange); }
+
+.footer-contact-item {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--gray-dim);
+}
+
+.footer-contact-item .contact-icon { font-size: 14px; flex-shrink: 0; }
+
+.social-links {
+  display: flex; gap: 12px;
+  margin-top: 16px;
+}
+
+.social-link {
+  width: 36px; height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all var(--transition);
+  color: var(--gray-dim);
+}
+
+.social-link:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: rgba(255,106,0,0.05);
+  box-shadow: 0 0 12px rgba(255,106,0,0.15);
+}
+
+.footer-bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.footer-copy {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gray-dim);
+  letter-spacing: 1px;
+}
+
+.footer-made {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray-dim);
+  display: flex; align-items: center; gap: 6px;
+}
+
+.footer-made span { color: var(--orange); }
+
+/* ===========================
+   REVEAL ANIMATION
+=========================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 1100px) {
+  .hero { flex-direction: column; align-items: center; padding-top: 120px; }
+  .hero-bird-wrap { flex: none; min-height: 300px; }
+  .phoenix-bird { width: 240px; height: 280px; }
+  .bird-glow-ring { width: 220px; height: 220px; }
+  .bird-glow-ring.ring2 { width: 300px; height: 300px; }
+  .hero-content { flex: none; padding-left: 0; text-align: center; }
+  .hero-ctas { justify-content: center; }
+  .trust-strip { justify-content: center; }
+  .wildfire-alert-split { grid-template-columns: 1fr; gap: 48px; }
+  .video-split { grid-template-columns: 1fr; gap: 48px; }
+  .about-grid { grid-template-columns: 1fr; gap: 48px; }
+  .tech-layout { grid-template-columns: 1fr; gap: 48px; }
+  .command-layout { grid-template-columns: 1fr; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  .usecases-grid { grid-template-columns: repeat(3, 1fr); }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+}
+
+@media (max-width: 768px) {
+  nav { padding: 16px 24px; }
+  nav.scrolled { padding: 12px 24px; }
+  .nav-links { display: none; }
+  .hero { padding: 120px 24px 60px; }
+  .section-inner { padding: 0 24px; }
+  .features-grid { grid-template-columns: 1fr; }
+  .usecases-grid { grid-template-columns: 1fr 1fr; }
+  .testimonials-grid { grid-template-columns: 1fr; }
+  .timeline { flex-direction: column; gap: 24px; }
+  .timeline::before { display: none; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+  .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
 </head>
 <body>
-    <h1>Welcome to Home</h1>
-      <a href="{{ url_for('app1.home') }}">Back to Home</a>
-  
-       <a href="{{ url_for('app4.page') }}">Go to App4</a>
-        <a href="{{ url_for('app3.page') }}">Go to App3</a>
-          <a href="{{ url_for('app6.page') }}">Go to App6</a>
-          <a href="{{ url_for('app5.page') }}">Go to App5</a>
-             <a href="{{ url_for('app7.page') }}">Go to App7</a>
-    <a href="{{ url_for('app2.logout') }}">Logout</a>
+
+<!-- BACKGROUND CANVAS -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- ===========================
+     NAVBAR
+=========================== -->
+<nav id="navbar">
+  <a href="{{ url_for('app1.home') }}" class="nav-logo">
+    <div class="logo-icon"><div class="logo-dot"></div></div>
+    PHOENIX V9
+  </a>
+  <ul class="nav-links">
+    <li><a href="{{ url_for('app1.home') }}">Home</a></li>
+    <li><a href="{{ url_for('app4.page') }}">Archive</a></li>
+    <li><a href="{{ url_for('app3.page') }}">Surveillance</a></li>
+    <li><a href="{{ url_for('app6.page') }}">Analytics</a></li>
+    <li><a href="{{ url_for('app5.page') }}">Monitoring</a></li>
+    <li><a href="{{ url_for('app7.page') }}">Reports</a></li>
+  </ul>
+  <a href="{{ url_for('app2.logout') }}" class="btn-primary">Logout ↗</a>
+</nav>
+
+<!-- ===========================
+     HERO
+=========================== -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="scan-lines"></div>
+  <div class="grid-texture"></div>
+
+  <!-- LEFT: PHOENIX BIRD -->
+  <div class="hero-bird-wrap">
+    <div class="bird-glow-ring"></div>
+    <div class="bird-glow-ring ring2"></div>
+    <svg class="phoenix-bird" viewBox="0 0 420 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="bodyGrad" cx="50%" cy="60%" r="50%">
+          <stop offset="0%" stop-color="#ffb347"/>
+          <stop offset="40%" stop-color="#ff6a00"/>
+          <stop offset="100%" stop-color="#c0390a"/>
+        </radialGradient>
+        <radialGradient id="wingGrad" cx="30%" cy="40%" r="70%">
+          <stop offset="0%" stop-color="#ffcc44" stop-opacity="0.95"/>
+          <stop offset="50%" stop-color="#ff5500" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#8b1a00" stop-opacity="0.3"/>
+        </radialGradient>
+        <radialGradient id="wingGradR" cx="70%" cy="40%" r="70%">
+          <stop offset="0%" stop-color="#ffcc44" stop-opacity="0.95"/>
+          <stop offset="50%" stop-color="#ff5500" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#8b1a00" stop-opacity="0.3"/>
+        </radialGradient>
+        <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fff0c0" stop-opacity="1"/>
+          <stop offset="60%" stop-color="#ffaa00" stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="#ff4400" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="8" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="softglow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="16" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <linearGradient id="tailGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ff6a00" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#ff2200" stop-opacity="0.05"/>
+        </linearGradient>
+        <linearGradient id="featherL1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffee88"/>
+          <stop offset="100%" stop-color="#ff4400" stop-opacity="0.2"/>
+        </linearGradient>
+      </defs>
+
+      <!-- AMBIENT GLOW BASE -->
+      <ellipse cx="210" cy="290" rx="130" ry="80" fill="url(#coreGlow)" opacity="0.35" filter="url(#softglow)"/>
+
+      <!-- TAIL FEATHERS -->
+      <path d="M210 360 Q180 420 155 470 Q175 440 210 400 Q245 440 265 470 Q240 420 210 360Z" fill="url(#tailGrad)" opacity="0.7"/>
+      <path d="M210 360 Q195 415 168 468 Q188 435 210 395Z" fill="#ff7700" opacity="0.5"/>
+      <path d="M210 360 Q225 415 252 468 Q232 435 210 395Z" fill="#ff7700" opacity="0.5"/>
+      <path d="M210 370 Q165 430 140 475 Q162 442 205 405Z" fill="#ff5500" opacity="0.35"/>
+      <path d="M210 370 Q255 430 280 475 Q258 442 215 405Z" fill="#ff5500" opacity="0.35"/>
+
+      <!-- LEFT WING — large sweeping -->
+      <path d="M190 230
+        Q140 180 60 150
+        Q30 130 10 100
+        Q50 110 80 140
+        Q40 90 20 40
+        Q65 70 90 115
+        Q70 55 75 10
+        Q105 55 105 110
+        Q120 50 140 20
+        Q150 65 140 120
+        Q165 70 195 55
+        Q190 100 170 140
+        Q200 100 230 95
+        Q215 135 190 165
+        Q205 150 215 180
+        Q200 190 190 230Z"
+        fill="url(#wingGrad)" filter="url(#glow)" opacity="0.9"/>
+
+      <!-- LEFT WING inner glow feathers -->
+      <path d="M185 230 Q145 185 80 155 Q120 175 160 210Z" fill="#ffdd66" opacity="0.3"/>
+      <path d="M185 210 Q130 165 70 130 Q110 155 155 190Z" fill="#ffaa22" opacity="0.2"/>
+
+      <!-- RIGHT WING — large sweeping -->
+      <path d="M230 230
+        Q280 180 360 150
+        Q390 130 410 100
+        Q370 110 340 140
+        Q380 90 400 40
+        Q355 70 330 115
+        Q350 55 345 10
+        Q315 55 315 110
+        Q300 50 280 20
+        Q270 65 280 120
+        Q255 70 225 55
+        Q230 100 250 140
+        Q220 100 190 95
+        Q205 135 230 165
+        Q215 150 205 180
+        Q220 190 230 230Z"
+        fill="url(#wingGradR)" filter="url(#glow)" opacity="0.9"/>
+
+      <!-- RIGHT WING inner -->
+      <path d="M235 230 Q275 185 340 155 Q300 175 260 210Z" fill="#ffdd66" opacity="0.3"/>
+
+      <!-- BODY -->
+      <ellipse cx="210" cy="280" rx="38" ry="70" fill="url(#bodyGrad)" filter="url(#glow)"/>
+
+      <!-- CHEST highlight -->
+      <ellipse cx="210" cy="265" rx="22" ry="35" fill="#ffcc55" opacity="0.35"/>
+
+      <!-- NECK -->
+      <path d="M196 215 Q200 195 210 185 Q220 195 224 215 Q215 208 210 200 Q205 208 196 215Z" fill="#ffaa22" opacity="0.9"/>
+
+      <!-- HEAD -->
+      <ellipse cx="210" cy="175" rx="28" ry="25" fill="url(#bodyGrad)" filter="url(#glow)"/>
+      <ellipse cx="210" cy="170" rx="16" ry="14" fill="#ffcc44" opacity="0.5"/>
+
+      <!-- EYE -->
+      <circle cx="216" cy="170" r="5" fill="#1a0800"/>
+      <circle cx="216" cy="170" r="3.5" fill="#ff6600"/>
+      <circle cx="216" cy="170" r="1.5" fill="#fff0a0"/>
+      <circle cx="217.5" cy="168.5" r="0.8" fill="white" opacity="0.9"/>
+
+      <!-- BEAK -->
+      <path d="M220 175 Q230 178 228 183 Q222 180 218 178Z" fill="#e05000" opacity="0.9"/>
+
+      <!-- CREST feathers -->
+      <path d="M200 162 Q192 140 185 118 Q198 138 205 158Z" fill="#ffcc44" opacity="0.85" filter="url(#glow)"/>
+      <path d="M208 158 Q205 133 204 105 Q210 130 212 156Z" fill="#ffaa00" opacity="0.9" filter="url(#glow)"/>
+      <path d="M216 160 Q220 135 225 110 Q220 134 218 158Z" fill="#ff7700" opacity="0.8" filter="url(#glow)"/>
+      <path d="M222 164 Q230 142 238 122 Q228 143 224 162Z" fill="#ff5500" opacity="0.7"/>
+
+      <!-- LEGS -->
+      <path d="M200 345 Q198 370 194 385 Q191 385 188 388 Q194 385 196 388 Q196 385 198 385 Q200 370 202 345Z" fill="#c04000" opacity="0.7"/>
+      <path d="M220 345 Q222 370 226 385 Q229 385 232 388 Q226 385 224 388 Q224 385 222 385 Q220 370 218 345Z" fill="#c04000" opacity="0.7"/>
+
+      <!-- FLAME particles around body -->
+      <circle cx="175" cy="250" r="4" fill="#ff8800" opacity="0.5" filter="url(#glow)"/>
+      <circle cx="248" cy="245" r="3" fill="#ffcc00" opacity="0.5" filter="url(#glow)"/>
+      <circle cx="182" cy="310" r="3.5" fill="#ff5500" opacity="0.4"/>
+      <circle cx="242" cy="305" r="2.5" fill="#ff7700" opacity="0.45"/>
+      <circle cx="165" cy="280" r="2" fill="#ffaa00" opacity="0.4"/>
+      <circle cx="258" cy="270" r="2" fill="#ff6600" opacity="0.4"/>
+
+      <!-- GLASSY GLASS OVERLAY on body -->
+      <ellipse cx="200" cy="255" rx="18" ry="28" fill="white" opacity="0.06"/>
+      <ellipse cx="202" cy="248" rx="9" ry="14" fill="white" opacity="0.08"/>
+    </svg>
+    <!-- FLAME BASE GLOW -->
+    <div class="bird-flame-base"></div>
+  </div>
+
+  <!-- RIGHT: HERO CONTENT -->
+  <div class="hero-content">
+    <div class="hero-eyebrow">NightFlare Platform — PHOENIX V9 Thermal Core</div>
+    <h1>Intelligent<br>Thermal<br><span class="highlight">Surveillance</span></h1>
+    <p class="hero-sub">PHOENIX V9 fuses real-time thermal detection, AI incident narration, and agentic monitoring to identify threats where ordinary cameras fail — darkness, smoke, fog, and fire.</p>
+    <div class="hero-ctas">
+      <a href="{{ url_for('app3.page') }}" class="btn-primary">Surveillance System ↗</a>
+      <a href="{{ url_for('app4.page') }}" class="btn-secondary">↗ Dashboard</a>
+    </div>
+    <div class="trust-strip">
+      <div class="trust-item"><span class="dot"></span>AI Thermal Detection</div>
+      <div class="trust-item"><span class="dot"></span>Real-Time Incident Logs</div>
+      <div class="trust-item"><span class="dot"></span>Agentic Monitoring</div>
+      <div class="trust-item"><span class="dot"></span>Low-Visibility Surveillance</div>
+    </div>
+  </div>
+
+</section>
+
+
+
+<!-- ===========================
+     FEATURES
+=========================== -->
+<section class="features-section" id="features">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Core Capabilities</div>
+      <h2 class="section-title">Platform Features</h2>
+      <p class="section-body">Every module is engineered for reliability in environments where conventional systems fail — from smoke-filled corridors to pitch-dark perimeters.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 6 4 10 4 14a8 8 0 0016 0c0-4-4-8-8-12z"/><path d="M12 12c-1.5 2-2 3.5-1.5 5"/></svg>
+        </div>
+        <h3>Thermal Person Detection</h3>
+        <p>YOLOv9c-powered detection on thermal video streams with per-frame confidence scores, bounding boxes, and stable cross-frame identity tracking.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="#ff6a00"/></svg>
+        </div>
+        <h3>Live Incident Streams</h3>
+        <p>Real-time overlays with detection labels, confidence ratings, and thermal colormap rendering — readable at a glance by any operator.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1.5" fill="#ff6a00"/></svg>
+        </div>
+        <h3>AI Summary Engine</h3>
+        <p>Gemini AI translates structured detection logs into concise incident narratives. Automatic fallback to raw logs ensures zero downtime.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><path d="M12 8v4"/><path d="M8.5 16l3.5-4 3.5 4"/><path d="M6 21l2-3"/><path d="M18 21l-2-3"/><path d="M12 20v1"/></svg>
+        </div>
+        <h3>Motion State Awareness</h3>
+        <p>Each detected person is classified as standing or moving across frames, enabling nuanced behavioral assessment and density tracking.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+        </div>
+        <h3>Structured Event Logging</h3>
+        <p>All detections are persisted to JSONL with width, height, confidence, frame ID, anomaly flags, and rolling density averages.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="7" height="7" rx="1"/><rect x="15" y="3" width="7" height="7" rx="1"/><rect x="2" y="14" width="7" height="7" rx="1"/><rect x="15" y="14" width="7" height="7" rx="1"/><path d="M9 6.5h6M12 3v7M9 17.5h6M12 14v7"/></svg>
+        </div>
+        <h3>Multi-Module Monitoring</h3>
+        <p>Seven Flask blueprint modules — dashboards, auth flows, thermal analysis, user management — each independently deployable and extensible.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ===========================
+     WILDFIRE EARLY ALERT
+=========================== -->
+<section class="wildfire-alert-section" id="wildfire-alert">
+  <div class="section-inner">
+    <div class="wildfire-alert-split">
+      <div class="reveal">
+        <a href="{{ url_for('app5.page') }}" class="wildfire-image-link">
+          <img
+            class="wildfire-image-holder"
+            src="https://i.postimg.cc/XNPjWsyT/Screenshot-2026-03-14-003223.png"
+            alt="Wildfire early alert thermal monitoring"
+            loading="lazy"
+          >
+        </a>
+      </div>
+      <div class="wildfire-copy reveal">
+        <div class="section-label">Wildfire Module</div>
+        <h2 class="section-title"><span id="text"></span></h2>
+        <p class="section-body">Advanced wildfire detection continuously analyzes heat signatures, smoke behavior, and high-risk thermal anomalies to trigger early alerts before visible flame expansion. This module is built to support faster response decisions across forests, remote zones, and critical infrastructure edges.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===========================
+     HUMAN ACTIVITY DETECTION
+=========================== -->
+<section class="wildfire-alert-section" id="human-activity-detection">
+  <div class="section-inner">
+    <div class="wildfire-alert-split">
+      <div class="wildfire-copy reveal">
+        <div class="section-label">Human Activity Module</div>
+        <h2 class="section-title">Human Activity Detection</h2>
+        <p class="section-body">The human activity detection system tracks people across monitored zones, classifies movement patterns, and highlights unusual behavior in real time. It is designed to improve situational awareness for perimeter security, industrial safety, and crowd monitoring operations.</p>
+      </div>
+      <div class="reveal">
+        <a href="{{ url_for('app3.page') }}" class="wildfire-image-link">
+          <img
+            class="wildfire-image-holder"
+            src="https://i.postimg.cc/wB6KdNqZ/553229370-a06ccd73-1a70-4e2c-8fa3-55fd9e247b17.png"
+            alt="Human activity detection monitoring"
+            loading="lazy"
+          >
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+
+
+<!-- ===========================
+     WHAT WE DO
+=========================== -->
+<section class="about-section">
+  <div class="section-inner">
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <div class="section-label">Mission</div>
+        <h2 class="section-title">Built for Environments Where Visibility Is a Luxury</h2>
+        <p>Standard surveillance fails the moment conditions turn hostile — dense smoke, absolute darkness, fog, or remote terrain beyond cable reach. Thermal Vision was engineered specifically for these scenarios. By operating on heat signatures rather than visible light, the platform maintains detection accuracy when RGB systems go blind.</p>
+        <p>From early wildfire identification in remote forest perimeters to 24/7 monitoring of industrial plants with toxic fume risk, Thermal Vision provides a persistent, intelligent eye that never tires. The YOLOv8 day/RGB system and YOLOv9 thermal system operate in tandem, ensuring seamless coverage across all lighting conditions.</p>
+        <p>Every alert is not just a flag — it's a narrated incident, structured log entry, and optional voice briefing, delivered in seconds to whoever needs to act.</p>
+        <a href="#cta" class="btn-primary" style="margin-top:8px;">Request Access ↗</a>
+      </div>
+      <div class="reveal">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">24/7</div>
+            <div class="stat-label">Continuous Monitoring</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">&lt;1s</div>
+            <div class="stat-label">Detection Latency</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">7</div>
+            <div class="stat-label">App Modules</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">AI</div>
+            <div class="stat-label">Incident Narration</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===========================
+     TIMELINE
+=========================== -->
+<section class="timeline-section">
+  <div class="section-inner">
+    <div class="reveal" style="text-align:center; margin-bottom:0;">
+      <div class="section-label" style="justify-content:center;">Pipeline</div>
+      <h2 class="section-title" style="text-align:center;">Detection to Decision</h2>
+    </div>
+    <div class="timeline" id="timeline">
+      <div class="timeline-item">
+        <div class="timeline-node">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="timeline-step-label">Step 01</div>
+        <h4>Capture</h4>
+        <p>Thermal camera feed ingested via Flask stream endpoint or file upload interface.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-node">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div class="timeline-step-label">Step 02</div>
+        <h4>Detect</h4>
+        <p>YOLOv9c analyzes each frame for persons, heat signatures, and motion markers.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-node">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M2 12h3M19 12h3M12 2v3M12 19v3"/><path d="M5.64 5.64l2.12 2.12M16.24 16.24l2.12 2.12M16.24 7.76l2.12-2.12M5.64 18.36l2.12-2.12"/></svg>
+        </div>
+        <div class="timeline-step-label">Step 03</div>
+        <h4>Track</h4>
+        <p>Each detected individual receives a stable ID maintained across consecutive frames.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-node">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4.03 3-9 3S3 13.66 3 12"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/></svg>
+        </div>
+        <div class="timeline-step-label">Step 04</div>
+        <h4>Log</h4>
+        <p>Structured events written to JSONL with full metadata — confidence, position, state.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-node">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div class="timeline-step-label">Step 05</div>
+        <h4>Summarize</h4>
+        <p>Gemini AI converts raw logs into readable incident narratives for human operators.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-node">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div class="timeline-step-label">Step 06</div>
+        <h4>Respond</h4>
+        <p>Alerts issued via dashboard, voice briefing, or API hook for immediate action.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===========================
+     USE CASES
+=========================== -->
+<section class="usecases-section" id="use-cases">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Applications</div>
+      <h2 class="section-title">Where Thermal Vision Deploys</h2>
+    </div>
+    <div class="usecases-grid">
+      <div class="usecase-card">
+        <div class="usecase-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.6" stroke-linecap="round"><path d="M17 8C8 10 5.9 16.17 3.82 19.2c-.1.13-.2.23-.32.28a4 4 0 0 0 7 0"/><path d="M3 3l18 18"/><path d="M10.85 5.08C11.56 4.4 12.47 4 14 4c5 0 6 5 6 8"/></svg>
+        </div>
+        <h3>Wildfire Early Detection</h3>
+        <p>Monitor forests and wildland perimeters before flames become visible. Thermal spikes trigger alerts minutes or hours ahead of ignition.</p>
+      </div>
+      <div class="usecase-card">
+        <div class="usecase-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><circle cx="12" cy="12" r="1.5" fill="#ff6a00"/></svg>
+        </div>
+        <h3>Industrial Safety</h3>
+        <p>Track personnel in hazardous manufacturing zones, detect unauthorized access, and monitor equipment heat signatures around the clock.</p>
+      </div>
+      <div class="usecase-card">
+        <div class="usecase-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.6" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <h3>Perimeter Security</h3>
+        <p>Protect residential, commercial, and critical infrastructure from intrusion — even in total darkness, rain, or heavy fog.</p>
+      </div>
+      <div class="usecase-card">
+        <div class="usecase-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <h3>Public Space Observation</h3>
+        <p>Track crowd density, identify anomalous movement patterns, and support incident response teams with actionable thermal data.</p>
+      </div>
+      <div class="usecase-card">
+        <div class="usecase-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+        </div>
+        <h3>Remote Area Monitoring</h3>
+        <p>Deploy in off-grid zones where wired infrastructure is impractical. Thermal detection functions independently of ambient lighting.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===========================
+     TECHNOLOGY
+=========================== -->
+<section class="tech-section" id="technology">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Stack</div>
+      <h2 class="section-title">Built on Proven Technology</h2>
+    </div>
+    <div class="tech-layout">
+      <div class="tech-chips reveal">
+        <div class="tech-chip"><span class="chip-icon">🐍</span><div class="chip-info"><div class="chip-name">Python 3.10</div><div class="chip-desc">Core Runtime</div></div></div>
+        <div class="tech-chip"><span class="chip-icon">⚗️</span><div class="chip-info"><div class="chip-name">Flask 3.1</div><div class="chip-desc">Web Framework</div></div></div>
+        <div class="tech-chip"><span class="chip-icon">🗄️</span><div class="chip-info"><div class="chip-name">MySQL</div><div class="chip-desc">Persistent Storage</div></div></div>
+        <div class="tech-chip"><span class="chip-icon">🎯</span><div class="chip-info"><div class="chip-name">YOLOv9c</div><div class="chip-desc">Thermal Detection</div></div></div>
+        <div class="tech-chip"><span class="chip-icon">📷</span><div class="chip-info"><div class="chip-name">YOLOv8</div><div class="chip-desc">RGB Day Detection</div></div></div>
+        <div class="tech-chip"><span class="chip-icon">✨</span><div class="chip-info"><div class="chip-name">Google Gemini</div><div class="chip-desc">AI Narration</div></div></div>
+        <div class="tech-chip"><span class="chip-icon">🔊</span><div class="chip-info"><div class="chip-name">pyttsx3</div><div class="chip-desc">Text-to-Speech</div></div></div>
+        <div class="tech-chip"><span class="chip-icon">🧩</span><div class="chip-info"><div class="chip-name">SQLAlchemy 3.1</div><div class="chip-desc">ORM Layer</div></div></div>
+        <div class="tech-chip"><span class="chip-icon">🎨</span><div class="chip-info"><div class="chip-name">Bootstrap + Jinja2</div><div class="chip-desc">Frontend Templates</div></div></div>
+      </div>
+      <div class="tech-desc reveal">
+        <div class="section-label">Integration</div>
+        <h3 style="font-family:var(--font-display);font-size:30px;letter-spacing:2px;text-transform:uppercase;color:var(--white);margin-bottom:20px;line-height:1;">How the Stack Works Together</h3>
+        <p>The Flask application serves as the backbone, routing requests across seven blueprint modules. SQLAlchemy abstracts the MySQL layer for user authentication and event persistence, while the Ultralytics stack handles real-time inference.</p>
+        <p>YOLOv9c processes thermal frames server-side, writing detection metadata to structured JSONL logs. These logs feed directly into the Gemini summarization pipeline, which produces incident narratives on demand or at scheduled intervals.</p>
+        <p>pyttsx3 bridges the digital and physical — delivering audio briefings to operators in the field without requiring visual attention. The entire system is designed for modularity: each app blueprint can be deployed, updated, or replaced independently.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===========================
+     COMMAND CENTER
+=========================== -->
+<section class="command-section">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Live Interface</div>
+      <h2 class="section-title">Command Center Preview</h2>
+      <p class="section-body">A glimpse into the operator experience — structured detection feeds, AI incident summaries, and real-time alert management.</p>
+    </div>
+    <div class="command-layout reveal">
+      <div class="command-main">
+        <div class="command-header">
+          <div class="command-title">Detection Feed — Active Session</div>
+          <div class="status-bar">
+            <span class="status-pill active">System Online</span>
+            <span class="status-pill warning">1 Alert</span>
+          </div>
+        </div>
+        <div class="detection-feed" id="detectionFeed">
+          <div class="feed-item person">
+            <span class="feed-time">23:14:02</span>
+            <span class="feed-type">PERSON</span>
+            <span class="feed-detail">ID:P_01 · Zone A3 · Standing</span>
+            <span class="feed-conf">94.2%</span>
+          </div>
+          <div class="feed-item motion">
+            <span class="feed-time">23:14:05</span>
+            <span class="feed-type">MOTION</span>
+            <span class="feed-detail">ID:P_02 · Moving East · High Velocity</span>
+            <span class="feed-conf">87.6%</span>
+          </div>
+          <div class="feed-item alert">
+            <span class="feed-time">23:14:09</span>
+            <span class="feed-type">ANOMALY</span>
+            <span class="feed-detail">ID:P_01 · Thermal Spike Detected · +12°C Above Baseline</span>
+            <span class="feed-conf">91.0%</span>
+          </div>
+          <div class="feed-item person">
+            <span class="feed-time">23:14:12</span>
+            <span class="feed-type">PERSON</span>
+            <span class="feed-detail">ID:P_03 · Zone B1 · Entering Frame</span>
+            <span class="feed-conf">88.4%</span>
+          </div>
+          <div class="feed-item motion">
+            <span class="feed-time">23:14:18</span>
+            <span class="feed-type">DENSITY</span>
+            <span class="feed-detail">Rolling Average: 2.8 persons/frame · Elevated</span>
+            <span class="feed-conf">—</span>
+          </div>
+        </div>
+        <div class="confidence-bars">
+          <div class="conf-bar">
+            <span class="conf-label">Person Det.</span>
+            <div class="conf-track"><div class="conf-fill" style="width:94%"></div></div>
+            <span class="conf-pct">94%</span>
+          </div>
+          <div class="conf-bar">
+            <span class="conf-label">Motion Class.</span>
+            <div class="conf-track"><div class="conf-fill" style="width:87%"></div></div>
+            <span class="conf-pct">87%</span>
+          </div>
+          <div class="conf-bar">
+            <span class="conf-label">Anomaly Det.</span>
+            <div class="conf-track"><div class="conf-fill" style="width:91%"></div></div>
+            <span class="conf-pct">91%</span>
+          </div>
+          <div class="conf-bar">
+            <span class="conf-label">AI Narration</span>
+            <div class="conf-track"><div class="conf-fill" style="width:100%"></div></div>
+            <span class="conf-pct">Active</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="command-sidebar">
+        <div class="ai-incident-card">
+          <div class="ai-incident-header">
+            <span class="ai-incident-title">▶ Gemini Incident Summary</span>
+            <span class="ai-incident-time">23:14:20</span>
+          </div>
+          <div class="ai-incident-body">Between 23:14:02 and 23:14:20, three individuals were identified in the perimeter monitoring zone. P_01 remained stationary near access point A3 and triggered a thermal anomaly flag — body temperature elevated 12°C above environmental baseline, suggesting proximity to a heat source. P_02 moved at velocity consistent with running. Recommend immediate operator review of Zone A3.</div>
+        </div>
+
+        <div class="alert-items">
+          <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:2px;color:var(--gray);text-transform:uppercase;margin-bottom:12px;">Active Alerts</div>
+          <div class="alert-item">
+            <div class="alert-dot red"></div>
+            <span class="alert-text">Thermal spike — Zone A3</span>
+            <span class="alert-time-label">23:14:09</span>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot orange"></div>
+            <span class="alert-text">Elevated density — Zone B</span>
+            <span class="alert-time-label">23:14:18</span>
+          </div>
+          <div class="alert-item">
+            <div class="alert-dot green"></div>
+            <span class="alert-text">System heartbeat — OK</span>
+            <span class="alert-time-label">23:14:20</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===========================
+     TESTIMONIALS
+=========================== -->
+<section class="testimonials-section">
+  <div class="section-inner">
+    <div class="reveal" style="text-align:center;">
+      <div class="section-label" style="justify-content:center;">Field Reports</div>
+      <h2 class="section-title" style="text-align:center;">Trusted in High-Stakes Environments</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <p class="quote-text">"Before PHOENIX V9, our response time to perimeter breaches averaged six minutes. The AI narration and structured alerts cut that down drastically — operators know exactly what's happening before they even look at the feed."</p>
+        <div class="quote-author">
+          <div class="author-avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <div class="author-name">M. Reeves</div>
+            <div class="author-role">Security Operations Lead · Industrial Site</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="quote-text">"We deployed this in a wildland fire-risk corridor. The thermal spike detection flagged a hotspot hours before it became visible. The early warning gave us the window to respond. I can't overstate what that means in wildfire season."</p>
+        <div class="quote-author">
+          <div class="author-avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <div class="author-name">T. Nkosi</div>
+            <div class="author-role">Fire Risk Coordinator · Environmental Services</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="quote-text">"Running YOLOv9 on thermal video and feeding the output into Gemini for narration is genuinely intelligent monitoring. The multi-module dashboard lets our team focus on specific zones without being overwhelmed by raw data."</p>
+        <div class="quote-author">
+          <div class="author-avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <div class="author-name">A. Johansson</div>
+            <div class="author-role">Safety Systems Engineer · Manufacturing</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===========================
+     FINAL CTA
+=========================== -->
+<section class="cta-section" id="cta">
+  <div class="cta-bg"></div>
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label" style="justify-content:center;">Get Access</div>
+      <h2>See What Conventional<br>Surveillance <span>Misses</span></h2>
+      <p>Thermal Vision is built for the environments no other system was designed to handle.<br>When visibility is gone, intelligence steps in.</p>
+      <div class="cta-buttons">
+        <a href="#contact" class="btn-primary" style="padding:14px 36px;font-size:13px;">Request Access ↗</a>
+        <a href="#features" class="btn-secondary" style="padding:14px 36px;font-size:13px;">View Live Capabilities</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===========================
+     FOOTER
+=========================== -->
+<footer id="contact">
+  <div class="section-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="{{ url_for('app1.home') }}" class="nav-logo">
+          <div class="logo-icon"><div class="logo-dot"></div></div>
+          PHOENIX V9
+        </a>
+        <p>AI-powered thermal surveillance and intelligent monitoring platform. Designed for environments where conventional cameras fail — darkness, smoke, fog, and high-risk terrain.</p>
+        <p style="margin-top:12px;font-family:var(--font-mono);font-size:10px;color:var(--gray-dim);letter-spacing:1px;">NIGHTFLARE · PHOENIX V9 THERMAL CORE · YOLOV9</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="{{ url_for('app1.home') }}">Back to Home</a></li>
+          <li><a href="{{ url_for('app4.page') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('app3.page') }}">Surveillance System</a></li>
+          <li><a href="{{ url_for('app6.page') }}">Analytics</a></li>
+          <li><a href="{{ url_for('app5.page') }}">Monitoring</a></li>
+          <li><a href="{{ url_for('app7.page') }}">Reports</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <ul>
+          <li><a href="{{ url_for('app4.page') }}">Live Dashboard</a></li>
+          <li><a href="{{ url_for('app3.page') }}">Thermal Detection</a></li>
+          <li><a href="{{ url_for('app5.page') }}">AI Summaries</a></li>
+          <li><a href="{{ url_for('app6.page') }}">Event Logs</a></li>
+          <li><a href="{{ url_for('app2.logout') }}">Logout</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col" id="contact-col">
+        <h4>Developer Contact</h4>
+        <div class="footer-contact-item">
+          <span class="contact-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </span>
+          <span><strong style="color:var(--white);">Sayak Samanta</strong></span>
+        </div>
+        <div class="footer-contact-item">
+          <span class="contact-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </span>
+          <span>xxxxxxxx</span>
+        </div>
+        <div class="footer-contact-item">
+          <span class="contact-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ff6a00" stroke-width="1.8" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </span>
+          <span>xxxxxxxx</span>
+        </div>
+        <div class="social-links">
+          <a href="https://x.com" target="_blank" class="social-link" title="X / Twitter">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="https://github.com" target="_blank" class="social-link" title="GitHub">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 PHOENIX V9 · NightFlare Thermal Platform · All Rights Reserved</span>
+      <span class="footer-made">Developed by <span>Sayak Samanta</span></span>
+    </div>
+  </div>
+</footer>
+
+<!-- ===========================
+     JAVASCRIPT
+=========================== -->
+<script>
+/* --- BACKGROUND CANVAS --- */
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+let particles = [];
+
+function resizeBg() {
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+}
+resizeBg();
+window.addEventListener('resize', resizeBg);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * bgCanvas.width;
+    this.y = Math.random() * bgCanvas.height;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = (Math.random() - 0.5) * 0.3;
+    this.alpha = Math.random() * 0.4 + 0.05;
+    this.r = Math.random() * 1.5 + 0.5;
+    this.orange = Math.random() > 0.75;
+  }
+  update() {
+    this.x += this.vx; this.y += this.vy;
+    if (this.x < 0 || this.x > bgCanvas.width || this.y < 0 || this.y > bgCanvas.height) this.reset();
+  }
+  draw() {
+    bgCtx.beginPath();
+    bgCtx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    bgCtx.fillStyle = this.orange ? `rgba(255,106,0,${this.alpha})` : `rgba(200,200,190,${this.alpha * 0.4})`;
+    bgCtx.fill();
+  }
+}
+
+for (let i = 0; i < 120; i++) particles.push(new Particle());
+
+function animBg() {
+  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animBg);
+}
+animBg();
+
+/* --- NAVBAR SCROLL --- */
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 60);
+});
+
+/* --- SCROLL REVEAL --- */
+function reveal() {
+  document.querySelectorAll('.reveal, .feature-card, .usecase-card, .testimonial-card, .timeline-item, .step').forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight - 80) el.classList.add('visible');
+  });
+}
+window.addEventListener('scroll', reveal);
+reveal();
+
+/* --- WILDFIRE HEADING TEXT GENERATION --- */
+const message = 'Wild Fire Detection Early Alert System';
+const speed = 50;
+
+let i = 0;
+
+function generateText() {
+  const textEl = document.getElementById('text');
+  if (!textEl) return;
+  if (i < message.length) {
+    textEl.innerHTML += message.charAt(i);
+    i++;
+    setTimeout(generateText, speed);
+  }
+}
+
+generateText();
+
+/* --- STAGGER FEATURE CARDS --- */
+document.querySelectorAll('.feature-card').forEach((el, i) => {
+  el.style.transitionDelay = (i * 80) + 'ms';
+});
+
+document.querySelectorAll('.usecase-card').forEach((el, i) => {
+  el.style.transitionDelay = (i * 60) + 'ms';
+});
+
+document.querySelectorAll('.timeline-item').forEach((el, i) => {
+  el.style.transitionDelay = (i * 100) + 'ms';
+});
+
+document.querySelectorAll('.step').forEach((el, i) => {
+  el.style.transitionDelay = (i * 80) + 'ms';
+});
+
+document.querySelectorAll('.testimonial-card').forEach((el, i) => {
+  el.style.transitionDelay = (i * 100) + 'ms';
+});
+
+/* --- LIVE FEED SIMULATION --- */
+const feedEl = document.getElementById('detectionFeed');
+const feedData = [
+  { type: 'person', time: null, typeLabel: 'PERSON', detail: 'ID:P_04 · Zone C2 · Standing', conf: '82.1%' },
+  { type: 'motion', time: null, typeLabel: 'MOTION', detail: 'ID:P_02 · Stopped · Zone A2', conf: '79.4%' },
+  { type: 'alert', time: null, typeLabel: 'DENSITY', detail: 'Rolling Avg: 3.2 persons/frame · High', conf: '—' },
+  { type: 'person', time: null, typeLabel: 'PERSON', detail: 'ID:P_01 · Zone A3 · Moving North', conf: '90.5%' },
+];
+
+let feedIdx = 0;
+setInterval(() => {
+  const d = feedData[feedIdx % feedData.length];
+  feedIdx++;
+  const now = new Date();
+  const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const item = document.createElement('div');
+  item.className = `feed-item ${d.type}`;
+  item.innerHTML = `<span class="feed-time">${ts}</span><span class="feed-type">${d.typeLabel}</span><span class="feed-detail">${d.detail}</span><span class="feed-conf">${d.conf}</span>`;
+  feedEl.insertBefore(item, feedEl.firstChild);
+  if (feedEl.children.length > 6) feedEl.removeChild(feedEl.lastChild);
+}, 3200);
+
+/* --- SMOOTH ANCHOR SCROLL --- */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  });
+});
+</script>
 </body>
 </html>

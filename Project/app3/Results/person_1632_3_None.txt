@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:08:14.027Z
+Frame ID: 1632
+Person ID: det-1632-3
+Detection Index: 3
+Bounding Box: w=12, h=33
+Confidence: 0.3835
+Motion State: None
+Temperature Mean: 111.4015
+Temperature Max: 214.0000

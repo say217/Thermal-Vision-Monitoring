@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:19:24.678Z
+Frame ID: 7800
+Person ID: det-7800-2
+Detection Index: 2
+Bounding Box: w=42, h=113
+Confidence: 0.6707
+Motion State: None
+Temperature Mean: 146.2033
+Temperature Max: 255.0000

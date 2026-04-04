@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:18:18.235Z
+Frame ID: 5814
+Person ID: det-5814-3
+Detection Index: 3
+Bounding Box: w=14, h=38
+Confidence: 0.4301
+Motion State: None
+Temperature Mean: 167.4229
+Temperature Max: 255.0000

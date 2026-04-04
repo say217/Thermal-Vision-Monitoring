@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:17:30.506Z
+Frame ID: 4410
+Person ID: det-4410-4
+Detection Index: 4
+Bounding Box: w=11, h=27
+Confidence: 0.2148
+Motion State: None
+Temperature Mean: 156.6330
+Temperature Max: 255.0000

@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:18:41.315Z
+Frame ID: 6507
+Person ID: 27
+Detection Index: 3
+Bounding Box: w=46, h=123
+Confidence: 0.3371
+Motion State: standing
+Temperature Mean: 179.6205
+Temperature Max: 255.0000

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Thermal Vision - Live Detection</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Manrope:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap');
     :root {
       --bg: #050506;
       --bg-2: #0b0b0d;
@@ -13,15 +13,21 @@
       --panel-2: #0a0b0d;
       --ink: #f6f6f7;
       --muted: #8c8f96;
-      --accent: #c9b48a;
-      --accent-2: #6bd4c5;
-      --accent-3: #5aa0ff;
+      --accent: #e05a00;
+      --accent-2: #ff6a00;
+      --accent-3: #ff9a3c;
       --matte: rgba(12, 13, 16, 0.92);
       --matte-2: rgba(9, 10, 12, 0.9);
       --glow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 12px 28px rgba(0, 0, 0, 0.55);
       --edge: rgba(255, 255, 255, 0.08);
       --edge-strong: rgba(255, 255, 255, 0.14);
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --font-body: 'Outfit', sans-serif;
       --header-h: 64px;
+      --grid-line: rgba(255, 255, 255, 0.035);
+      --scan-line: rgba(255, 106, 0, 0.03);
+      --edge-hud: rgba(255, 255, 255, 0.16);
     }
 
     * {
@@ -30,30 +36,39 @@
 
     body {
       margin: 0;
-      font-family: "Manrope", "Segoe UI", sans-serif;
+      font-family: var(--font-body);
       color: var(--ink);
       background: radial-gradient(circle at 20% 20%, rgba(201, 180, 138, 0.08), transparent 46%),
         radial-gradient(circle at 85% 10%, rgba(90, 160, 255, 0.08), transparent 42%),
         radial-gradient(circle at 10% 90%, rgba(107, 212, 197, 0.06), transparent 40%),
-        linear-gradient(135deg, #040405 0%, var(--bg) 55%, #07080a 100%);
+        linear-gradient(135deg, #030304 0%, #050507 45%, #07080a 100%);
       min-height: 100vh;
       letter-spacing: 0.2px;
     }
+
+    body.loading {
+      overflow: hidden;
+    }
+    
 
     body::before {
       content: "";
       position: fixed;
       inset: 0;
-      background: repeating-linear-gradient(
-        120deg,
-        rgba(255, 255, 255, 0.02) 0px,
-        rgba(255, 255, 255, 0.02) 1px,
-        transparent 1px,
-        transparent 5px
-      );
-      opacity: 0.25;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+        repeating-linear-gradient(
+          180deg,
+          transparent 0px,
+          transparent 3px,
+          var(--scan-line) 3px,
+          var(--scan-line) 4px
+        );
+      background-size: 36px 36px, 36px 36px, auto;
+      opacity: 0.35;
       pointer-events: none;
-      mix-blend-mode: soft-light;
+      mix-blend-mode: screen;
       z-index: 0;
     }
 
@@ -71,56 +86,59 @@
       border-bottom: 1px solid var(--edge);
       background: linear-gradient(180deg, rgba(12, 13, 16, 0.98), rgba(7, 8, 10, 0.92));
       backdrop-filter: blur(8px);
-      box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+      box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.04), 0 8px 24px rgba(0, 0, 0, 0.45);
     }
 
     header h1 {
       margin: 0;
-      font-size: 18px;
-      letter-spacing: 1.1px;
+      font-family: var(--font-display);
+      font-size: 22px;
+      letter-spacing: 2px;
       text-transform: uppercase;
       color: #f3f0e8;
     }
 
     header nav a {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
       color: var(--muted);
       text-decoration: none;
-      margin-left: 10px;
-      font-size: 13px;
-      letter-spacing: 0.4px;
-      position: relative;
+      padding: 6px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      white-space: nowrap;
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.01);
     }
 
     header nav a:hover {
       color: var(--ink);
-    }
-
-    header nav a::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      bottom: -6px;
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-
-    header nav a:hover::after {
-      opacity: 0.7;
+      border-color: var(--edge-strong);
+      background: rgba(255, 255, 255, 0.04);
     }
 
     .stop-mini {
-      border: 1px solid var(--edge-strong);
-      background: rgba(12, 13, 16, 0.75);
-      color: var(--ink);
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 8px;
+      border: 1px solid var(--edge-hud);
+      background: linear-gradient(180deg, rgba(224, 90, 0, 0.13), rgba(224, 90, 0, 0.03));
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border-radius: 0;
       cursor: pointer;
       margin-left: 10px;
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    }
+
+    .stop-mini:hover {
+      border-color: rgba(255, 106, 0, 0.65);
+      color: var(--accent);
+      box-shadow: 0 0 14px rgba(255, 106, 0, 0.18);
     }
 
     .layout {
@@ -143,7 +161,7 @@
       padding: 16px;
       background: linear-gradient(160deg, rgba(15, 16, 19, 0.98), rgba(8, 9, 11, 0.98));
       border-bottom: 1px solid var(--edge);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
     }
 
     .controls input[type="file"] {
@@ -153,18 +171,21 @@
     .btn {
       border: none;
       padding: 10px 12px;
-      border-radius: 40px;
+      border-radius: 0;
+      font-family: var(--font-mono);
+      font-size: 12px;
       font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
       cursor: pointer;
-      background: transparent;
-      color: #ffffff;
-      border: 1.5px solid #ffffff;
+      background: var(--accent);
+      color: #000000;
+      border: 1px solid transparent;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      letter-spacing: 0.3px;
-      transition: background-color 0.25s ease, color 0.25s ease, transform 0.15s ease;
+      transition: background-color 0.25s ease, color 0.25s ease, transform 0.15s ease, box-shadow 0.2s ease;
     }
 
     .btn svg {
@@ -175,8 +196,9 @@
     }
 
     .btn:hover {
-      background-color: #ffffff;
+      background-color: var(--accent-2);
       color: #000000;
+      box-shadow: 0 0 28px rgba(255, 106, 0, 0.35);
     }
 
     .btn:active {
@@ -192,7 +214,10 @@
 
     .status {
       color: var(--muted);
-      font-size: 13px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
     }
 
     .upload-box {
@@ -206,31 +231,30 @@
       align-items: center;
       justify-content: center;
       height: 140px;
-      border-radius: 16px;
-      border: 1px dashed rgba(255, 255, 255, 0.18);
+      border-radius: 0;
+      border: 1px dashed rgba(255, 106, 0, 0.28);
       background: linear-gradient(135deg, rgba(6, 7, 9, 0.95), rgba(14, 16, 19, 0.98));
       cursor: pointer;
       transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
       text-align: center;
       position: relative;
       overflow: hidden;
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03), inset 0 0 24px rgba(255, 106, 0, 0.04);
     }
 
     .upload-label::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at top, rgba(201, 180, 138, 0.22), transparent 60%),
-        radial-gradient(circle at 80% 100%, rgba(90, 160, 255, 0.12), transparent 55%);
+      background: radial-gradient(circle at top, rgba(255, 106, 0, 0.22), transparent 60%);
       opacity: 0;
       transition: opacity 0.25s ease;
     }
 
     .upload-label:hover {
-      border-color: rgba(201, 180, 138, 0.7);
+      border-color: rgba(255, 106, 0, 0.72);
       transform: translateY(-2px);
-      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5), 0 0 26px rgba(255, 106, 0, 0.12);
     }
 
     .upload-label:hover::after {
@@ -240,12 +264,12 @@
     .upload-icon {
       width: 30px;
       height: 22px;
-      border: 2px solid rgba(255, 255, 255, 0.85);
+      border: 2px solid rgba(255, 106, 0, 0.92);
       border-radius: 5px;
       position: relative;
       margin-bottom: 8px;
       z-index: 1;
-      box-shadow: 0 0 10px rgba(201, 180, 138, 0.15);
+      box-shadow: 0 0 10px rgba(255, 106, 0, 0.2);
     }
 
     .upload-icon::before {
@@ -255,21 +279,24 @@
       left: 7px;
       width: 12px;
       height: 6px;
-      border: 2px solid var(--ink);
+      border: 2px solid rgba(255, 106, 0, 0.92);
       border-bottom: none;
       border-radius: 4px 4px 0 0;
     }
 
     .upload-text {
-      font-size: 12px;
-      letter-spacing: 0.6px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 1.8px;
       text-transform: uppercase;
       color: var(--ink);
       z-index: 1;
     }
 
     .upload-sub {
-      font-size: 11px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 1px;
       color: var(--muted);
       margin-top: 2px;
       z-index: 1;
@@ -279,7 +306,7 @@
       position: relative;
       width: 100%;
       height: 160px;
-      border-radius: 16px;
+      border-radius: 0;
       overflow: hidden;
       display: none;
       background: #000;
@@ -300,7 +327,7 @@
       right: 8px;
       width: 24px;
       height: 24px;
-      border-radius: 50%;
+      border-radius: 0;
       background: rgba(9, 10, 12, 0.85);
       color: #fff;
       border: 1px solid rgba(255, 255, 255, 0.2);
@@ -313,8 +340,8 @@
     }
 
     .remove-btn:hover {
-      background: #fff;
-      color: #000;
+      background: rgba(255, 106, 0, 0.16);
+      color: var(--accent-2);
       transform: scale(1.05);
     }
 
@@ -330,11 +357,11 @@
 
     .stream-card {
       background: linear-gradient(180deg, rgba(15, 16, 19, 0.98), rgba(8, 9, 11, 0.96));
-      border: 1px solid var(--edge);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       overflow: hidden;
       position: relative;
       border-radius: 0;
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 10px 18px rgba(0, 0, 0, 0.35);
     }
 
     .stream-card.agent {
@@ -373,12 +400,13 @@
       align-items: center;
       gap: 6px;
       padding: 4px 8px;
-      font-size: 11px;
-      letter-spacing: 0.3px;
-      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      color: var(--accent-2);
       background: rgba(8, 9, 11, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: 10px;
+      border: 1px solid rgba(255, 106, 0, 0.34);
+      border-radius: 0;
       text-transform: uppercase;
       backdrop-filter: blur(6px);
       z-index: 2;
@@ -411,15 +439,18 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 14px;
-      letter-spacing: 0.6px;
+      font-family: var(--font-display);
+      font-size: 18px;
+      letter-spacing: 1.6px;
       text-transform: uppercase;
       color: var(--ink);
     }
 
     .agent-header small {
+      font-family: var(--font-mono);
       color: var(--muted);
-      font-size: 11px;
+      font-size: 9px;
+      letter-spacing: 1px;
       text-transform: none;
     }
 
@@ -451,12 +482,12 @@
       display: none;
       flex-direction: column;
       gap: 6px;
-      font-family: "JetBrains Mono", "Consolas", monospace;
-      font-size: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
       color: #c7d7de;
       padding: 6px;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
+      border-radius: 0;
       background: rgba(3, 4, 6, 0.45);
       min-height: 100px;
     }
@@ -492,20 +523,20 @@
       flex-direction: column;
       gap: 0;
       min-height: 100%;
-      box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.03);
+      box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.03), inset 0 0 0 1px rgba(255, 255, 255, 0.02);
     }
 
     .log-box {
       flex: 1;
       background: linear-gradient(180deg, rgba(8, 9, 11, 0.95), rgba(6, 7, 9, 0.9));
       padding: 14px;
-      font-family: "JetBrains Mono", "Consolas", monospace;
-      font-size: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
       color: #c7d7de;
       overflow-y: auto;
       white-space: pre-wrap;
       border-top: 1px solid var(--edge);
-      scrollbar-color: rgba(201, 180, 138, 0.6) transparent;
+      scrollbar-color: rgba(255, 106, 0, 0.45) transparent;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
@@ -526,6 +557,68 @@
       display: none !important;
     }
 
+    .app-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 154, 60, 0.1), transparent 48%),
+        linear-gradient(165deg, rgba(7, 8, 10, 0.98), rgba(5, 5, 6, 0.98));
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .app-loader.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loader-card {
+      width: min(420px, calc(100vw - 32px));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0;
+      padding: 22px 20px;
+      background: rgba(10, 11, 13, 0.9);
+      box-shadow: 0 20px 38px rgba(0, 0, 0, 0.52);
+      text-align: center;
+    }
+
+    .loader-title {
+      margin: 0 0 10px;
+      font-family: var(--font-display);
+      letter-spacing: 1.6px;
+      font-size: 24px;
+      color: #f3f0e8;
+      text-transform: uppercase;
+    }
+
+    .loader-spinner {
+      width: 46px;
+      height: 46px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.15);
+      border-top-color: var(--accent-2);
+      animation: loaderSpin 0.95s linear infinite;
+    }
+
+    .loader-status {
+      margin: 0;
+      font-family: var(--font-mono);
+      letter-spacing: 1px;
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    @keyframes loaderSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     @media (max-width: 1100px) {
       .layout {
         grid-template-columns: 1fr;
@@ -543,18 +636,29 @@
     }
   </style>
 </head>
-<body>
+<body class="loading">
+  <div class="app-loader" id="appLoader" aria-live="polite" aria-busy="true">
+    <div class="loader-card">
+      <div class="loader-spinner" aria-hidden="true"></div>
+      <h2 class="loader-title">Preparing Detection Stack</h2>
+      <p class="loader-status" id="loaderStatus">Loading interface...</p>
+    </div>
+  </div>
   <header>
     <h1>Thermal Vision - Autonomous Detection</h1>
     <nav>
       <a href="{{ url_for('app1.home') }}">Home</a>
-      <a href="{{ url_for('app4.page') }}">App4</a>
-      <a href="{{ url_for('app5.page') }}">App5</a>
+      <li><a href="{{ url_for('app3.page') }}">Surveillance</a>
+      <a href="{{ url_for('app4.page') }}">Archive</a>
+      <a href="{{ url_for('app5.page') }}">Wild Fire</a>
       <a href="{{ url_for('app6.page') }}">App6</a>
       <a href="{{ url_for('app7.page') }}">App7</a>
       <a href="{{ url_for('app2.logout') }}">Logout</a>
-      <button class="stop-mini" type="button" id="stopMini">Stop</button>
+      <button class="stop-mini" type="button" id="pauseBtn">Pause</button>
+<button class="stop-mini" type="button" id="resumeBtn">Resume</button>
+<button class="stop-mini" type="button" id="stopMini">Stop</button>
     </nav>
+    
   </header>
 
   <main class="layout">
@@ -627,6 +731,55 @@
   </main>
 
   <script>
+    const appLoader = document.getElementById('appLoader');
+    const loaderStatus = document.getElementById('loaderStatus');
+
+    function setLoaderStatus(text) {
+      if (loaderStatus) {
+        loaderStatus.textContent = text;
+      }
+    }
+
+    function waitMs(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    async function runStartupChecks() {
+      setLoaderStatus('Loading UI components...');
+      await new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      });
+
+      setLoaderStatus('Warming model endpoints...');
+      const statusUrl = `{{ url_for('app3.status') }}`;
+      const eventsUrl = `{{ url_for('app3.events') }}`;
+      await Promise.allSettled([
+        fetch(statusUrl, { cache: 'no-store' }),
+        fetch(eventsUrl, { cache: 'no-store' })
+      ]);
+    }
+
+    async function hideLoaderWhenReady() {
+      const minVisibleMs = 900;
+      const startedAt = Date.now();
+
+      try {
+        await runStartupChecks();
+      } finally {
+        const elapsed = Date.now() - startedAt;
+        if (elapsed < minVisibleMs) {
+          await waitMs(minVisibleMs - elapsed);
+        }
+        document.body.classList.remove('loading');
+        if (appLoader) {
+          appLoader.classList.add('hidden');
+          setTimeout(() => appLoader.remove(), 420);
+        }
+      }
+    }
+
+    window.addEventListener('load', hideLoaderWhenReady);
+
     const uploadForm = document.getElementById('uploadForm');
     const videoInput = document.getElementById('videoInput');
     const statusText = document.getElementById('statusText');
@@ -753,6 +906,41 @@
 
     let isRunning = false;
     let lastEventTs = null;
+    let logInterval = null;
+  document.getElementById("pauseBtn").onclick = async () => {
+    await fetch("{{ url_for('app3.pause_processing') }}", {
+        method: "POST"
+    });
+};
+
+document.getElementById("resumeBtn").onclick = async () => {
+    await fetch("{{ url_for('app3.resume_processing') }}", {
+        method: "POST"
+    });
+};
+let statusInterval = null;
+let eventInterval = null;
+
+function startPolling() {
+  if (!logInterval) {
+    logInterval = setInterval(refreshLogs, 1000);
+  }
+  if (!statusInterval) {
+    statusInterval = setInterval(refreshStatus, 1500);
+  }
+  if (!eventInterval) {
+    eventInterval = setInterval(refreshEvents, 2000);
+  }
+}
+
+function stopPolling() {
+  clearInterval(logInterval);
+  clearInterval(statusInterval);
+  clearInterval(eventInterval);
+  logInterval = null;
+  statusInterval = null;
+  eventInterval = null;
+}
 
     async function refreshLogs() {
       try {
@@ -898,6 +1086,7 @@
         }
 
         isRunning = true;
+        startPolling();
         lastLogSeq = 0;
         lastEventTs = null;
         setUiRunning(true);
@@ -915,6 +1104,7 @@
         stopStreams();
         setUiRunning(false);
         isRunning = false;
+        stopPolling();
         lastEventTs = null;
         renderAgentSummaryText('Upload failed. Please try again.');
         renderAgentRows([], false);
@@ -957,6 +1147,7 @@
       stopStreams();
       setUiRunning(false);
       isRunning = false;
+      stopPolling();
       lastEventTs = null;
       statusText.textContent = 'Stopped';
       agentTimestampEl.textContent = 'System idle';
@@ -966,23 +1157,11 @@
     });
 
     setUiRunning(false);
-    refreshLogs();
-    refreshStatus();
-    setInterval(refreshLogs, 1000);
-    setInterval(refreshStatus, 1500);
-    setInterval(refreshEvents, 2000);
+  //   refreshLogs();
+  // refreshStatus();
+  // setInterval(refreshLogs, 1000);
+  // setInterval(refreshStatus, 1500);
+  // setInterval(refreshEvents, 2000);
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-

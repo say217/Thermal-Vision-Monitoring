@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:17:49.227Z
+Frame ID: 4947
+Person ID: 18
+Detection Index: 2
+Bounding Box: w=34, h=88
+Confidence: 0.7403
+Motion State: standing
+Temperature Mean: 139.7126
+Temperature Max: 253.0000

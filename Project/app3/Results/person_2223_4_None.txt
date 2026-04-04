@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:16:17.901Z
+Frame ID: 2223
+Person ID: det-2223-4
+Detection Index: 4
+Bounding Box: w=16, h=33
+Confidence: 0.3030
+Motion State: None
+Temperature Mean: 156.7992
+Temperature Max: 255.0000

@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:19:15.201Z
+Frame ID: 7530
+Person ID: det-7530-1
+Detection Index: 1
+Bounding Box: w=34, h=101
+Confidence: 0.2046
+Motion State: None
+Temperature Mean: 143.5926
+Temperature Max: 255.0000

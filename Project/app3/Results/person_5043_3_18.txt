@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:17:52.963Z
+Frame ID: 5043
+Person ID: 18
+Detection Index: 3
+Bounding Box: w=43, h=127
+Confidence: 0.4786
+Motion State: moving
+Temperature Mean: 134.3382
+Temperature Max: 255.0000

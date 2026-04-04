@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:17:04.888Z
+Frame ID: 3606
+Person ID: det-3606-2
+Detection Index: 2
+Bounding Box: w=11, h=26
+Confidence: 0.2267
+Motion State: None
+Temperature Mean: 108.2657
+Temperature Max: 180.0000

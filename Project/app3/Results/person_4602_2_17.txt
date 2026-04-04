@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:17:36.936Z
+Frame ID: 4602
+Person ID: 17
+Detection Index: 2
+Bounding Box: w=23, h=63
+Confidence: 0.7854
+Motion State: moving
+Temperature Mean: 97.6480
+Temperature Max: 227.0000

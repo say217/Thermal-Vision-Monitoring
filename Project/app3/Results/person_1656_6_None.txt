@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:15:59.256Z
+Frame ID: 1656
+Person ID: det-1656-6
+Detection Index: 6
+Bounding Box: w=10, h=24
+Confidence: 0.2632
+Motion State: None
+Temperature Mean: 158.1458
+Temperature Max: 255.0000

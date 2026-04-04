@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:15:36.941Z
+Frame ID: 972
+Person ID: det-972-14
+Detection Index: 14
+Bounding Box: w=13, h=30
+Confidence: 0.2306
+Motion State: None
+Temperature Mean: 145.4154
+Temperature Max: 242.0000

@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:18:39.864Z
+Frame ID: 6453
+Person ID: 26
+Detection Index: 3
+Bounding Box: w=23, h=51
+Confidence: 0.2676
+Motion State: standing
+Temperature Mean: 97.0588
+Temperature Max: 209.0000

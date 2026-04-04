@@ -1,0 +1,9 @@
+Timestamp: 2026-03-27T14:31:56.101Z
+Frame ID: 1629
+Person ID: det-1629-5
+Detection Index: 5
+Bounding Box: w=9, h=20
+Confidence: 0.2026
+Motion State: None
+Temperature Mean: 160.8278
+Temperature Max: 255.0000

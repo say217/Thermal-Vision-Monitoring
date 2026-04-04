@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:19:27.324Z
+Frame ID: 7887
+Person ID: det-7887-3
+Detection Index: 3
+Bounding Box: w=42, h=118
+Confidence: 0.3474
+Motion State: None
+Temperature Mean: 127.8545
+Temperature Max: 255.0000

@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:18:09.102Z
+Frame ID: 5526
+Person ID: 22
+Detection Index: 3
+Bounding Box: w=16, h=44
+Confidence: 0.7268
+Motion State: standing
+Temperature Mean: 115.3636
+Temperature Max: 196.0000

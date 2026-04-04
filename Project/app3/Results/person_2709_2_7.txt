@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:16:35.228Z
+Frame ID: 2709
+Person ID: 07
+Detection Index: 2
+Bounding Box: w=28, h=87
+Confidence: 0.7640
+Motion State: moving
+Temperature Mean: 155.1232
+Temperature Max: 255.0000

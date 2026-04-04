@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:18:30.921Z
+Frame ID: 6198
+Person ID: det-6198-4
+Detection Index: 4
+Bounding Box: w=21, h=49
+Confidence: 0.2079
+Motion State: None
+Temperature Mean: 170.7075
+Temperature Max: 255.0000

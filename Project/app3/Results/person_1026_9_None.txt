@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:07:54.328Z
+Frame ID: 1026
+Person ID: det-1026-9
+Detection Index: 9
+Bounding Box: w=21, h=55
+Confidence: 0.2051
+Motion State: None
+Temperature Mean: 120.3983
+Temperature Max: 255.0000

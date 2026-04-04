@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:16:38.879Z
+Frame ID: 2820
+Person ID: 11
+Detection Index: 2
+Bounding Box: w=34, h=85
+Confidence: 0.2377
+Motion State: standing
+Temperature Mean: 149.4907
+Temperature Max: 251.0000

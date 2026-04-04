@@ -5,6 +5,37 @@ from flask import Blueprint, render_template, session, redirect, url_for, reques
 from werkzeug.utils import secure_filename
 from functools import wraps
 from . import thermo
+import logging
+
+_LOG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'flask_access.log')
+_LOG_PATH = os.path.normpath(_LOG_PATH)
+_MAX_LINES = 1000
+
+def _trim_log_file(path, keep_lines):
+    if keep_lines <= 0 or not os.path.exists(path):
+        return
+    try:
+        with open(path, 'r', encoding='utf-8', errors='ignore') as fh:
+            lines = fh.readlines()
+        if len(lines) <= keep_lines:
+            return
+        with open(path, 'w', encoding='utf-8') as fh:
+            fh.writelines(lines[-keep_lines:])
+    except Exception:
+        # Never fail app startup due to log maintenance.
+        pass
+
+
+_trim_log_file(_LOG_PATH, _MAX_LINES)
+
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.INFO)
+if not any(getattr(h, '_thermal_access_handler', False) for h in log.handlers):
+    # FileHandler avoids Windows rename-lock errors raised by RotatingFileHandler.
+    handler = logging.FileHandler(_LOG_PATH, mode='a', encoding='utf-8', delay=True)
+    handler.setFormatter(logging.Formatter('%(asctime)s | %(message)s', '%Y-%m-%d %H:%M:%S'))
+    handler._thermal_access_handler = True
+    log.addHandler(handler)
 
 bp = Blueprint('app3', __name__, template_folder='templates')
 
@@ -37,6 +68,7 @@ def upload_video():
     filename = secure_filename(file.filename)
     save_path = os.path.join(upload_dir, filename)
     file.save(save_path)
+    thermo.processing_state["paused"] = False
     thermo.start_processing(save_path, show_windows=False)
     return jsonify({'ok': True, 'path': save_path})
 
@@ -44,30 +76,46 @@ def upload_video():
 def _mjpeg_stream(kind):
     try:
         last_id = -1
+
         while True:
+            # Stop streaming if processing has ended
+            if not thermo.processing_state.get("running", False):
+                break
+
             frame_id, frame = thermo.get_latest_frame_with_id(kind)
+
+            # If no new frame, wait slightly
             if frame is None or frame_id == last_id:
                 time.sleep(0.01)
                 continue
+
             last_id = frame_id
+
             h, w = frame.shape[:2]
+
+            # Resize if too wide
             if w > 560:
                 target_w = 560
                 scale = target_w / float(w)
                 frame = cv2.resize(frame, (target_w, int(h * scale)))
+
             ok, buffer = cv2.imencode(
                 '.jpg',
                 frame,
                 [int(cv2.IMWRITE_JPEG_QUALITY), 50]
             )
+
             if not ok:
                 time.sleep(0.01)
                 continue
+
             yield (
                 b'--frame\r\n'
                 b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n'
             )
+
             time.sleep(0.01)
+
     except GeneratorExit:
         return
 
@@ -121,14 +169,13 @@ def stop():
     thermo.stop_processing()
     return jsonify({'ok': True})
 
-
-
-
-
-
-
-
-
-
-
-
+@bp.route('/pause', methods=['POST'])
+@login_required
+def pause_processing():
+    thermo.processing_state["paused"] = True
+    return jsonify({"ok": True})
+@bp.route('/resume', methods=['POST'])
+@login_required
+def resume_processing():
+    thermo.processing_state["paused"] = False
+    return jsonify({"ok": True})

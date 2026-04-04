@@ -1,13 +1,15 @@
-
-
+import glob
 
 import os
+import atexit
 import cv2
 import threading
 import time
 import logging
 import json
 import re
+import shutil
+import tempfile
 from datetime import datetime, timezone
 from collections import deque
 try:
@@ -22,13 +24,80 @@ try:
     import pyttsx3
 except Exception:
     pyttsx3 = None
+try:
+    from huggingface_hub import hf_hub_download
+except Exception:
+    hf_hub_download = None
 from ultralytics import YOLO
+
+RESULTS_DIR = os.path.join(os.path.dirname(__file__), "Results")
+RESULTS_FILE_LIMIT = 200
+
+
+def _prune_old_result_files(directory, pattern, keep_last):
+    files = glob.glob(os.path.join(directory, pattern))
+    if len(files) <= keep_last:
+        return
+    files.sort(key=lambda path: os.path.getmtime(path), reverse=True)
+    for stale_file in files[keep_last:]:
+        try:
+            os.remove(stale_file)
+        except Exception:
+            pass
+
+
+def enforce_results_retention():
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+    _prune_old_result_files(RESULTS_DIR, "*.jpg", RESULTS_FILE_LIMIT)
+    _prune_old_result_files(RESULTS_DIR, "*.txt", RESULTS_FILE_LIMIT)
+
+
+enforce_results_retention()
+
+
 
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-MODEL_PATH = os.path.join(PROJECT_ROOT, "yolov9c.pt")
-if not os.path.exists(MODEL_PATH):
-    MODEL_PATH = os.path.join(PROJECT_ROOT, "app3", "model", "yolov9c.pt")
+HF_SPACE_REPO_ID = "say89/PHOENIXV9_OBJDETCT_V"
+HF_MODEL_FILE = "yolov9c.pt"
+
+CACHE_ROOT = os.path.join(PROJECT_ROOT, ".model_cache")
+try:
+    os.makedirs(CACHE_ROOT, exist_ok=True)
+    RUN_CACHE_DIR = tempfile.mkdtemp(prefix="hf_run_", dir=CACHE_ROOT)
+except Exception:
+    RUN_CACHE_DIR = tempfile.mkdtemp(prefix="hf_run_")
+
+
+def _cleanup_model_cache():
+    try:
+        shutil.rmtree(RUN_CACHE_DIR, ignore_errors=True)
+    except Exception:
+        pass
+
+
+atexit.register(_cleanup_model_cache)
+
+MODEL_PATH = None
+if hf_hub_download is not None:
+    try:
+        MODEL_PATH = hf_hub_download(
+            repo_id=HF_SPACE_REPO_ID,
+            filename=HF_MODEL_FILE,
+            repo_type="space",
+            cache_dir=RUN_CACHE_DIR,
+            token=os.getenv("HF_TOKEN"),
+        )
+        log_msg = f"Loaded model from Hugging Face Space: {HF_SPACE_REPO_ID}/{HF_MODEL_FILE}"
+    except Exception:
+        MODEL_PATH = None
+
+if not MODEL_PATH:
+    MODEL_PATH = os.path.join(PROJECT_ROOT, "yolov9c.pt")
+    if not os.path.exists(MODEL_PATH):
+        MODEL_PATH = os.path.join(PROJECT_ROOT, "app3", "model", "yolov9c.pt")
+    log_msg = f"Loaded local model: {MODEL_PATH}"
+
 model = YOLO(MODEL_PATH)
 try:
     model.fuse()
@@ -38,6 +107,7 @@ except Exception:
 LOG_MAX_LINES = 1500
 LOG_PATH = os.path.join(PROJECT_ROOT, "app.log")
 STRUCT_LOG_PATH = os.path.join(PROJECT_ROOT, "run_structured.jsonl")
+STRUCT_LOG_MAX_LINES = 6000
 logger = logging.getLogger("thermal_cam")
 logger.setLevel(logging.INFO)
 logger.handlers = []
@@ -55,6 +125,20 @@ tts_lock = threading.Lock()
 tts_worker = None
 
 
+def _trim_file_to_last_lines(path, keep_lines):
+    if keep_lines <= 0 or not os.path.exists(path):
+        return
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as fh:
+            lines = fh.readlines()
+        if len(lines) <= keep_lines:
+            return
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.writelines(lines[-keep_lines:])
+    except Exception:
+        pass
+
+
 def reset_logging():
     global file_handler, struct_log_file, log_buffer, log_seq
     for handler in list(logger.handlers):
@@ -68,12 +152,14 @@ def reset_logging():
             struct_log_file.close()
         except Exception:
             pass
-    file_handler = logging.FileHandler(LOG_PATH, mode="w", encoding="utf-8")
+    _trim_file_to_last_lines(LOG_PATH, LOG_MAX_LINES)
+    _trim_file_to_last_lines(STRUCT_LOG_PATH, STRUCT_LOG_MAX_LINES)
+    file_handler = logging.FileHandler(LOG_PATH, mode="a", encoding="utf-8")
     file_handler.setLevel(logging.INFO)
     log_formatter = logging.Formatter("%(asctime)s | %(message)s", "%H:%M:%S")
     file_handler.setFormatter(log_formatter)
     logger.addHandler(file_handler)
-    struct_log_file = open(STRUCT_LOG_PATH, "w", encoding="utf-8")
+    struct_log_file = open(STRUCT_LOG_PATH, "a", encoding="utf-8")
     with log_lock:
         log_buffer.clear()
         log_seq = 0
@@ -186,8 +272,13 @@ def _tts_loop():
 def _sanitize_for_tts(text):
     if not text:
         return ""
-    # Reduce to alphabetic text so the voice module skips numbers/special chars.
-    cleaned = re.sub(r"[^A-Za-z\s]", " ", text)
+    # Allow person IDs (e.g., ID-12), filter other numbers/special chars
+    def keep_person_id(match):
+        return match.group(0)
+    # Replace all numbers except those after 'ID-'
+    cleaned = re.sub(r"ID-\d+", keep_person_id, text)
+    cleaned = re.sub(r"(?!ID-\d+)[0-9]", " ", cleaned)
+    cleaned = re.sub(r"[^A-Za-z\s-]", " ", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned)
     return cleaned.strip()
 
@@ -303,31 +394,29 @@ def agent_watch_loop():
                 continue
             latest_event = events[-1]
             marker = f"{latest_event.get('timestamp')}|{latest_event.get('frame_id')}"
-            if marker != last_processed_marker and not pending_summary:
-                pending_summary = True
-                first_activity_detected_at = time.time()
-            if not pending_summary:
-                time.sleep(0.5)
-                continue
             now_ts = time.time()
-            if first_activity_detected_at and (now_ts - first_activity_detected_at) < AGENT_EVERY_SEC:
-                time.sleep(0.5)
+            if marker != last_processed_marker:
+                # Instant output on first detection
+                digest = build_activity_digest(events)
+                if digest:
+                    agent_text = agent_analyze(agent_client, digest)
+                    if agent_text and agent_text.upper() != "OK":
+                        log(f"AGENT | {agent_text}")
+                        print(f"AGENT | {agent_text}")
+                last_processed_marker = marker
+                last_report_ts = now_ts
+                time.sleep(AGENT_EVERY_SEC)
                 continue
-            if last_report_ts and (now_ts - last_report_ts) < AGENT_EVERY_SEC:
-                time.sleep(0.5)
+            if last_report_ts and (now_ts - last_report_ts) >= AGENT_EVERY_SEC:
+                digest = build_activity_digest(events)
+                if digest:
+                    agent_text = agent_analyze(agent_client, digest)
+                    if agent_text and agent_text.upper() != "OK":
+                        log(f"AGENT | {agent_text}")
+                        print(f"AGENT | {agent_text}")
+                last_report_ts = now_ts
+                time.sleep(AGENT_EVERY_SEC)
                 continue
-            digest = build_activity_digest(events)
-            if not digest:
-                pending_summary = False
-                time.sleep(0.5)
-                continue
-            agent_text = agent_analyze(agent_client, digest)
-            if agent_text and agent_text.upper() != "OK":
-                log(f"AGENT | {agent_text}")
-                print(f"AGENT | {agent_text}")
-            last_processed_marker = marker
-            pending_summary = False
-            last_report_ts = now_ts
             time.sleep(0.5)
     except Exception as exc:
         agent_health["online"] = False
@@ -354,10 +443,10 @@ THERMAL_SPIKE_K = 2.5
 THERMAL_MIN_DELTA = 20.0
 STANDING_ALERT_SEC = 8.0
 EDGE_MARGIN_PX = 40
-ALERT_COOLDOWN_SEC = 5.0
+ALERT_COOLDOWN_SEC = 30.0
 AGENT_ENABLED = True
 AGENT_MODEL = "gemini-2.5-flash"
-AGENT_EVERY_SEC = 30.0
+AGENT_EVERY_SEC = 20.0
 AGENT_MAX_EVENTS = 25
 
 agent_client = None
@@ -382,7 +471,7 @@ processing_lock = threading.Lock()
 processing_state = {"running": False, "video_path": None, "error": None}
 
 WINDOW_NAME_COLOR = "YOLOv9 Thermal"
-WINDOW_NAME_EXPLAIN = "YOLOv9 Explain"
+WINDOW_NAME_EXPLAIN = "Prediction Overlay Explain"
 SHOW_EXPLAIN = True
 TEXT_SCALE = 0.4
 TEXT_THICKNESS = 1
@@ -542,7 +631,11 @@ class PersonTrack:
         return mean, var ** 0.5
 
     def can_alert(self, key, ts):
-        last_ts = self.last_alert_ts.get(key, 0.0)
+        last_ts = self.last_alert_ts.get(key, None)
+        if last_ts is None:
+            # First detection: allow instant alert, set timestamp
+            self.last_alert_ts[key] = ts
+            return True
         if ts - last_ts >= ALERT_COOLDOWN_SEC:
             self.last_alert_ts[key] = ts
             return True
@@ -698,7 +791,7 @@ def match_tracks(tracks, detections, ts):
     return assignments, unmatched_det
 
 
-def log_detections(results, scale_x, scale_y, frame_id, per_det_info, gray_frame, now_ts):
+def log_detections(results, scale_x, scale_y, frame_id, per_det_info, gray_frame, now_ts, orig_frame):
     boxes = results.boxes
     if boxes is None or boxes.xyxy is None:
         return 0, 0
@@ -762,6 +855,27 @@ def log_detections(results, scale_x, scale_y, frame_id, per_det_info, gray_frame
                 "temperature_max": round(max_intensity, 4),
             }
             log_structured(payload)
+            # Save frame and log for detected person
+            os.makedirs(RESULTS_DIR, exist_ok=True)
+            # Save the whole frame as JPG
+            img_filename = f"frame_{frame_id}_{det_index}_{track_id}.jpg"
+            img_path = os.path.join(RESULTS_DIR, img_filename)
+            if orig_frame is not None and orig_frame.size > 0:
+                cv2.imwrite(img_path, orig_frame)
+            # Save detection log as TXT
+            log_filename = f"person_{frame_id}_{det_index}_{track_id}.txt"
+            log_path = os.path.join(RESULTS_DIR, log_filename)
+            with open(log_path, "w", encoding="utf-8") as log_file:
+                log_file.write(f"Timestamp: {timestamp}\n")
+                log_file.write(f"Frame ID: {frame_id}\n")
+                log_file.write(f"Person ID: {person_identifier}\n")
+                log_file.write(f"Detection Index: {det_index}\n")
+                log_file.write(f"Bounding Box: w={width}, h={height}\n")
+                log_file.write(f"Confidence: {conf:.4f}\n")
+                log_file.write(f"Motion State: {track_state}\n")
+                log_file.write(f"Temperature Mean: {mean_intensity:.4f}\n")
+                log_file.write(f"Temperature Max: {max_intensity:.4f}\n")
+            enforce_results_retention()
 
     return persons_in_frame, total
 
@@ -774,6 +888,9 @@ def inference_loop():
     tracks = {}
     next_track_id = 1
     while not stop_event.is_set():
+        # Pause processing if requested
+        while processing_state.get("paused", False) and not stop_event.is_set():
+            time.sleep(0.1)
         with latest_lock:
             frame_id = latest_infer["id"]
             frame = latest_infer["frame"]
@@ -903,6 +1020,7 @@ def inference_loop():
             per_det_info,
             gray_frame,
             now_ts,
+            orig_frame,
         )
         if total_detections > 0:
             total_person_detections += persons_in_frame

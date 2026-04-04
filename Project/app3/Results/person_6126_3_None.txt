@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:18:29.145Z
+Frame ID: 6126
+Person ID: det-6126-3
+Detection Index: 3
+Bounding Box: w=22, h=52
+Confidence: 0.6517
+Motion State: None
+Temperature Mean: 152.8392
+Temperature Max: 255.0000

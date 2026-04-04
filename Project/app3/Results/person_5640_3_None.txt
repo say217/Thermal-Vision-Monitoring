@@ -1,0 +1,9 @@
+Timestamp: 2026-03-14T17:18:12.650Z
+Frame ID: 5640
+Person ID: det-5640-3
+Detection Index: 3
+Bounding Box: w=36, h=97
+Confidence: 0.2549
+Motion State: None
+Temperature Mean: 93.3688
+Temperature Max: 188.0000
