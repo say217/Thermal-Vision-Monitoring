@@ -79,7 +79,8 @@ def index():
     return redirect(url_for('app2.login'))
 
 if __name__ == '__main__':
-    app.run(debug=True, threaded=True)
+    # use_reloader=False prevents model reloading during debug
+    app.run(debug=True, threaded=True, use_reloader=False)
     
     
     

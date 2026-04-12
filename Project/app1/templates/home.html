@@ -215,61 +215,43 @@ nav.scrolled {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 480px;
+  min-height: 560px;
 }
 
-.phoenix-bird {
-  width: 340px;
-  height: 400px;
+.hero-image {
+  width: 100%;
+  height: auto;
+  max-width: 700px;
   position: relative;
   z-index: 2;
-  filter: drop-shadow(0 0 40px rgba(255,106,0,0.5)) drop-shadow(0 0 80px rgba(255,60,0,0.25));
-  animation: bird-breathe 4s ease-in-out infinite;
+  display: block;
+  margin: 0 auto;
+  animation: image-float 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 30px rgba(255,106,0,0.6)) drop-shadow(0 0 60px rgba(255,60,0,0.4));
 }
 
-@keyframes bird-breathe {
-  0%,100% { transform: translateY(0) scale(1); filter: drop-shadow(0 0 40px rgba(255,106,0,0.5)) drop-shadow(0 0 80px rgba(255,60,0,0.25)); }
-  50% { transform: translateY(-14px) scale(1.02); filter: drop-shadow(0 0 60px rgba(255,140,0,0.7)) drop-shadow(0 0 100px rgba(255,80,0,0.4)); }
+@keyframes image-float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
-.bird-glow-ring {
+.hero-bird-wrap::before {
+  content: '';
   position: absolute;
-  width: 320px; height: 320px;
+  width: 560px;
+  height: 560px;
   border-radius: 50%;
-  border: 1px solid rgba(255,106,0,0.15);
-  top: 50%; left: 50%;
+  background: radial-gradient(ellipse, rgba(255,106,0,0.15) 0%, rgba(255,60,0,0.05) 40%, transparent 70%);
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
-  animation: ring-pulse 3s ease-in-out infinite;
   z-index: 1;
+  animation: glow-pulse 3s ease-in-out infinite;
 }
 
-.bird-glow-ring.ring2 {
-  width: 440px; height: 440px;
-  border-color: rgba(255,106,0,0.07);
-  animation-delay: 1s;
-  animation-duration: 4s;
-}
-
-@keyframes ring-pulse {
-  0%,100% { opacity: 0.4; transform: translate(-50%,-50%) scale(1); }
-  50% { opacity: 1; transform: translate(-50%,-50%) scale(1.04); }
-}
-
-.bird-flame-base {
-  position: absolute;
-  bottom: 20px; left: 50%;
-  transform: translateX(-50%);
-  width: 120px; height: 60px;
-  background: radial-gradient(ellipse, rgba(255,80,0,0.4) 0%, rgba(255,40,0,0.15) 50%, transparent 80%);
-  border-radius: 50%;
-  filter: blur(12px);
-  z-index: 1;
-  animation: flame-pulse 2s ease-in-out infinite;
-}
-
-@keyframes flame-pulse {
-  0%,100% { opacity: 0.5; transform: translateX(-50%) scaleX(1); }
-  50% { opacity: 1; transform: translateX(-50%) scaleX(1.2); }
+@keyframes glow-pulse {
+  0%,100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
 }
 
 .hero-content {
@@ -1399,7 +1381,9 @@ footer {
 =========================== */
 @media (max-width: 1100px) {
   .hero { flex-direction: column; align-items: center; padding-top: 120px; }
-  .hero-bird-wrap { flex: none; min-height: 300px; }
+  .hero-bird-wrap { flex: none; min-height: 360px; }
+  .hero-image { max-width: 380px; }
+  .hero-bird-wrap::before { width: 420px; height: 420px; }
   .phoenix-bird { width: 240px; height: 280px; }
   .bird-glow-ring { width: 220px; height: 220px; }
   .bird-glow-ring.ring2 { width: 300px; height: 300px; }
@@ -1421,6 +1405,8 @@ footer {
   nav.scrolled { padding: 12px 24px; }
   .nav-links { display: none; }
   .hero { padding: 120px 24px 60px; }
+  .hero-image { max-width: 320px; }
+  .hero-bird-wrap::before { width: 360px; height: 360px; }
   .section-inner { padding: 0 24px; }
   .features-grid { grid-template-columns: 1fr; }
   .usecases-grid { grid-template-columns: 1fr 1fr; }
@@ -1472,151 +1458,9 @@ footer {
   <div class="scan-lines"></div>
   <div class="grid-texture"></div>
 
-  <!-- LEFT: PHOENIX BIRD -->
+  <!-- LEFT: HERO IMAGE -->
   <div class="hero-bird-wrap">
-    <div class="bird-glow-ring"></div>
-    <div class="bird-glow-ring ring2"></div>
-    <svg class="phoenix-bird" viewBox="0 0 420 480" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="bodyGrad" cx="50%" cy="60%" r="50%">
-          <stop offset="0%" stop-color="#ffb347"/>
-          <stop offset="40%" stop-color="#ff6a00"/>
-          <stop offset="100%" stop-color="#c0390a"/>
-        </radialGradient>
-        <radialGradient id="wingGrad" cx="30%" cy="40%" r="70%">
-          <stop offset="0%" stop-color="#ffcc44" stop-opacity="0.95"/>
-          <stop offset="50%" stop-color="#ff5500" stop-opacity="0.8"/>
-          <stop offset="100%" stop-color="#8b1a00" stop-opacity="0.3"/>
-        </radialGradient>
-        <radialGradient id="wingGradR" cx="70%" cy="40%" r="70%">
-          <stop offset="0%" stop-color="#ffcc44" stop-opacity="0.95"/>
-          <stop offset="50%" stop-color="#ff5500" stop-opacity="0.8"/>
-          <stop offset="100%" stop-color="#8b1a00" stop-opacity="0.3"/>
-        </radialGradient>
-        <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#fff0c0" stop-opacity="1"/>
-          <stop offset="60%" stop-color="#ffaa00" stop-opacity="0.6"/>
-          <stop offset="100%" stop-color="#ff4400" stop-opacity="0"/>
-        </radialGradient>
-        <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="8" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-        <filter id="softglow" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="16" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-        <linearGradient id="tailGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#ff6a00" stop-opacity="0.9"/>
-          <stop offset="100%" stop-color="#ff2200" stop-opacity="0.05"/>
-        </linearGradient>
-        <linearGradient id="featherL1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#ffee88"/>
-          <stop offset="100%" stop-color="#ff4400" stop-opacity="0.2"/>
-        </linearGradient>
-      </defs>
-
-      <!-- AMBIENT GLOW BASE -->
-      <ellipse cx="210" cy="290" rx="130" ry="80" fill="url(#coreGlow)" opacity="0.35" filter="url(#softglow)"/>
-
-      <!-- TAIL FEATHERS -->
-      <path d="M210 360 Q180 420 155 470 Q175 440 210 400 Q245 440 265 470 Q240 420 210 360Z" fill="url(#tailGrad)" opacity="0.7"/>
-      <path d="M210 360 Q195 415 168 468 Q188 435 210 395Z" fill="#ff7700" opacity="0.5"/>
-      <path d="M210 360 Q225 415 252 468 Q232 435 210 395Z" fill="#ff7700" opacity="0.5"/>
-      <path d="M210 370 Q165 430 140 475 Q162 442 205 405Z" fill="#ff5500" opacity="0.35"/>
-      <path d="M210 370 Q255 430 280 475 Q258 442 215 405Z" fill="#ff5500" opacity="0.35"/>
-
-      <!-- LEFT WING — large sweeping -->
-      <path d="M190 230
-        Q140 180 60 150
-        Q30 130 10 100
-        Q50 110 80 140
-        Q40 90 20 40
-        Q65 70 90 115
-        Q70 55 75 10
-        Q105 55 105 110
-        Q120 50 140 20
-        Q150 65 140 120
-        Q165 70 195 55
-        Q190 100 170 140
-        Q200 100 230 95
-        Q215 135 190 165
-        Q205 150 215 180
-        Q200 190 190 230Z"
-        fill="url(#wingGrad)" filter="url(#glow)" opacity="0.9"/>
-
-      <!-- LEFT WING inner glow feathers -->
-      <path d="M185 230 Q145 185 80 155 Q120 175 160 210Z" fill="#ffdd66" opacity="0.3"/>
-      <path d="M185 210 Q130 165 70 130 Q110 155 155 190Z" fill="#ffaa22" opacity="0.2"/>
-
-      <!-- RIGHT WING — large sweeping -->
-      <path d="M230 230
-        Q280 180 360 150
-        Q390 130 410 100
-        Q370 110 340 140
-        Q380 90 400 40
-        Q355 70 330 115
-        Q350 55 345 10
-        Q315 55 315 110
-        Q300 50 280 20
-        Q270 65 280 120
-        Q255 70 225 55
-        Q230 100 250 140
-        Q220 100 190 95
-        Q205 135 230 165
-        Q215 150 205 180
-        Q220 190 230 230Z"
-        fill="url(#wingGradR)" filter="url(#glow)" opacity="0.9"/>
-
-      <!-- RIGHT WING inner -->
-      <path d="M235 230 Q275 185 340 155 Q300 175 260 210Z" fill="#ffdd66" opacity="0.3"/>
-
-      <!-- BODY -->
-      <ellipse cx="210" cy="280" rx="38" ry="70" fill="url(#bodyGrad)" filter="url(#glow)"/>
-
-      <!-- CHEST highlight -->
-      <ellipse cx="210" cy="265" rx="22" ry="35" fill="#ffcc55" opacity="0.35"/>
-
-      <!-- NECK -->
-      <path d="M196 215 Q200 195 210 185 Q220 195 224 215 Q215 208 210 200 Q205 208 196 215Z" fill="#ffaa22" opacity="0.9"/>
-
-      <!-- HEAD -->
-      <ellipse cx="210" cy="175" rx="28" ry="25" fill="url(#bodyGrad)" filter="url(#glow)"/>
-      <ellipse cx="210" cy="170" rx="16" ry="14" fill="#ffcc44" opacity="0.5"/>
-
-      <!-- EYE -->
-      <circle cx="216" cy="170" r="5" fill="#1a0800"/>
-      <circle cx="216" cy="170" r="3.5" fill="#ff6600"/>
-      <circle cx="216" cy="170" r="1.5" fill="#fff0a0"/>
-      <circle cx="217.5" cy="168.5" r="0.8" fill="white" opacity="0.9"/>
-
-      <!-- BEAK -->
-      <path d="M220 175 Q230 178 228 183 Q222 180 218 178Z" fill="#e05000" opacity="0.9"/>
-
-      <!-- CREST feathers -->
-      <path d="M200 162 Q192 140 185 118 Q198 138 205 158Z" fill="#ffcc44" opacity="0.85" filter="url(#glow)"/>
-      <path d="M208 158 Q205 133 204 105 Q210 130 212 156Z" fill="#ffaa00" opacity="0.9" filter="url(#glow)"/>
-      <path d="M216 160 Q220 135 225 110 Q220 134 218 158Z" fill="#ff7700" opacity="0.8" filter="url(#glow)"/>
-      <path d="M222 164 Q230 142 238 122 Q228 143 224 162Z" fill="#ff5500" opacity="0.7"/>
-
-      <!-- LEGS -->
-      <path d="M200 345 Q198 370 194 385 Q191 385 188 388 Q194 385 196 388 Q196 385 198 385 Q200 370 202 345Z" fill="#c04000" opacity="0.7"/>
-      <path d="M220 345 Q222 370 226 385 Q229 385 232 388 Q226 385 224 388 Q224 385 222 385 Q220 370 218 345Z" fill="#c04000" opacity="0.7"/>
-
-      <!-- FLAME particles around body -->
-      <circle cx="175" cy="250" r="4" fill="#ff8800" opacity="0.5" filter="url(#glow)"/>
-      <circle cx="248" cy="245" r="3" fill="#ffcc00" opacity="0.5" filter="url(#glow)"/>
-      <circle cx="182" cy="310" r="3.5" fill="#ff5500" opacity="0.4"/>
-      <circle cx="242" cy="305" r="2.5" fill="#ff7700" opacity="0.45"/>
-      <circle cx="165" cy="280" r="2" fill="#ffaa00" opacity="0.4"/>
-      <circle cx="258" cy="270" r="2" fill="#ff6600" opacity="0.4"/>
-
-      <!-- GLASSY GLASS OVERLAY on body -->
-      <ellipse cx="200" cy="255" rx="18" ry="28" fill="white" opacity="0.06"/>
-      <ellipse cx="202" cy="248" rx="9" ry="14" fill="white" opacity="0.08"/>
-    </svg>
-    <!-- FLAME BASE GLOW -->
-    <div class="bird-flame-base"></div>
+    <img src="{{ url_for('app1.static', filename='images/Gemini_Generated_Image_ndcrp1ndcrp1ndcr-removebg-preview.png') }}" alt="AI Thermal Surveillance" class="hero-image">
   </div>
 
   <!-- RIGHT: HERO CONTENT -->

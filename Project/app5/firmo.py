@@ -30,20 +30,45 @@ TEST_IMAGE_CANDIDATES = [
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 CACHE_ROOT = os.path.join(PROJECT_ROOT, ".model_cache")
-try:
-    os.makedirs(CACHE_ROOT, exist_ok=True)
-    RUN_CACHE_DIR = tempfile.mkdtemp(prefix="hf_run_", dir=CACHE_ROOT)
-except Exception:
-    RUN_CACHE_DIR = tempfile.mkdtemp(prefix="hf_run_")
 
 
-def _cleanup_model_cache():
+# Function to clear old cache folder on startup
+def _clear_old_cache():
+    """Clear .model_cache folder at startup"""
     try:
-        shutil.rmtree(RUN_CACHE_DIR, ignore_errors=True)
+        if os.path.exists(CACHE_ROOT):
+            shutil.rmtree(CACHE_ROOT, ignore_errors=True)
     except Exception:
         pass
 
 
+# Function to create fresh session cache directory
+def _get_session_cache_dir():
+    """Create fresh cache directory for this session"""
+    try:
+        os.makedirs(CACHE_ROOT, exist_ok=True)
+        return CACHE_ROOT
+    except Exception:
+        return tempfile.mkdtemp(prefix="hf_run_")
+
+
+# Function to cleanup cache when program exits
+def _cleanup_model_cache():
+    """Delete entire cache folder when program exits"""
+    try:
+        if os.path.exists(CACHE_ROOT):
+            shutil.rmtree(CACHE_ROOT, ignore_errors=True)
+    except Exception:
+        pass
+
+
+# Clear old cache on startup
+_clear_old_cache()
+
+# Create session cache directory
+SESSION_CACHE_DIR = _get_session_cache_dir()
+
+# Register cleanup function to run on program exit
 atexit.register(_cleanup_model_cache)
 
 _model_lock = threading.Lock()
@@ -265,7 +290,7 @@ def get_model():
             repo_id=MODEL_REPO_ID,
             filename=MODEL_FILE,
             repo_type="space",
-            cache_dir=RUN_CACHE_DIR,
+            cache_dir=SESSION_CACHE_DIR,
         )
         _model_instance = YOLO(model_path)
         return _model_instance

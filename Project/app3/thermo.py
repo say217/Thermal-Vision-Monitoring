@@ -62,47 +62,114 @@ HF_SPACE_REPO_ID = "say89/PHOENIXV9_OBJDETCT_V"
 HF_MODEL_FILE = "yolov9c.pt"
 
 CACHE_ROOT = os.path.join(PROJECT_ROOT, ".model_cache")
-try:
-    os.makedirs(CACHE_ROOT, exist_ok=True)
-    RUN_CACHE_DIR = tempfile.mkdtemp(prefix="hf_run_", dir=CACHE_ROOT)
-except Exception:
-    RUN_CACHE_DIR = tempfile.mkdtemp(prefix="hf_run_")
 
 
-def _cleanup_model_cache():
+# Function to clear old cache folder on startup (opt-in)
+def _clear_old_cache():
+    """Clear .model_cache folder at startup when explicitly requested"""
+    if os.getenv("CLEAR_MODEL_CACHE") not in ("1", "true", "TRUE", "yes", "YES"):
+        return
     try:
-        shutil.rmtree(RUN_CACHE_DIR, ignore_errors=True)
+        if os.path.exists(CACHE_ROOT):
+            shutil.rmtree(CACHE_ROOT, ignore_errors=True)
     except Exception:
         pass
 
 
-atexit.register(_cleanup_model_cache)
-
-MODEL_PATH = None
-if hf_hub_download is not None:
+# Function to create fresh session cache directory
+def _get_session_cache_dir():
+    """Create fresh cache directory for this session"""
     try:
-        MODEL_PATH = hf_hub_download(
-            repo_id=HF_SPACE_REPO_ID,
-            filename=HF_MODEL_FILE,
-            repo_type="space",
-            cache_dir=RUN_CACHE_DIR,
-            token=os.getenv("HF_TOKEN"),
-        )
-        log_msg = f"Loaded model from Hugging Face Space: {HF_SPACE_REPO_ID}/{HF_MODEL_FILE}"
+        os.makedirs(CACHE_ROOT, exist_ok=True)
+        return CACHE_ROOT
     except Exception:
-        MODEL_PATH = None
+        return tempfile.mkdtemp(prefix="hf_run_")
 
-if not MODEL_PATH:
-    MODEL_PATH = os.path.join(PROJECT_ROOT, "yolov9c.pt")
-    if not os.path.exists(MODEL_PATH):
-        MODEL_PATH = os.path.join(PROJECT_ROOT, "app3", "model", "yolov9c.pt")
-    log_msg = f"Loaded local model: {MODEL_PATH}"
 
-model = YOLO(MODEL_PATH)
-try:
-    model.fuse()
-except Exception:
-    pass
+def _find_cached_model_path():
+    """Find a previously downloaded model inside the cache folder"""
+    if not os.path.isdir(CACHE_ROOT):
+        return None
+    direct_path = os.path.join(CACHE_ROOT, HF_MODEL_FILE)
+    if os.path.exists(direct_path):
+        return direct_path
+    for root, _, files in os.walk(CACHE_ROOT):
+        if HF_MODEL_FILE in files:
+            return os.path.join(root, HF_MODEL_FILE)
+    return None
+
+
+# Function to cleanup cache when program exits (opt-in)
+def _cleanup_model_cache():
+    """Delete entire cache folder when program exits"""
+    try:
+        if os.path.exists(CACHE_ROOT):
+            shutil.rmtree(CACHE_ROOT, ignore_errors=True)
+    except Exception:
+        pass
+
+
+# Clear old cache on startup
+_clear_old_cache()
+
+# Create session cache directory
+SESSION_CACHE_DIR = _get_session_cache_dir()
+
+# Register cleanup function only when explicitly requested
+if os.getenv("CLEAR_MODEL_CACHE") in ("1", "true", "TRUE", "yes", "YES"):
+    atexit.register(_cleanup_model_cache)
+
+# Global flag to prevent model loading during Flask debug reloads
+_MODEL_LOADED = False
+MODEL_PATH = None
+model = None
+
+def _load_model_once():
+    """Load model only once, preventing double downloads during Flask debug reloads"""
+    global _MODEL_LOADED, MODEL_PATH, model
+    
+    if _MODEL_LOADED:
+        return
+    
+    _MODEL_LOADED = True
+    
+    cached_path = _find_cached_model_path()
+    if cached_path:
+        MODEL_PATH = cached_path
+        print(f"✓ Using cached model: {MODEL_PATH}")
+    elif hf_hub_download is not None:
+        try:
+            hf_token = os.getenv("HF_TOKEN")
+            MODEL_PATH = hf_hub_download(
+                repo_id=HF_SPACE_REPO_ID,
+                filename=HF_MODEL_FILE,
+                repo_type="space",
+                cache_dir=SESSION_CACHE_DIR,
+                token=hf_token,
+            )
+            print(f"✓ Model downloaded from Hugging Face (token: {'enabled' if hf_token else 'not set'})")
+        except Exception as e:
+            print(f"✗ Failed to download from HF: {e}")
+            MODEL_PATH = None
+    
+    # Fall back to local model if HF download failed
+    if not MODEL_PATH:
+        MODEL_PATH = os.path.join(PROJECT_ROOT, "yolov9c.pt")
+        if not os.path.exists(MODEL_PATH):
+            MODEL_PATH = os.path.join(PROJECT_ROOT, "app3", "model", "yolov9c.pt")
+        print(f"✓ Using local model: {MODEL_PATH}")
+    
+    # Load and fuse model once
+    try:
+        model = YOLO(MODEL_PATH)
+        model.fuse()
+        print(f"✓ Model loaded and fused successfully")
+    except Exception as e:
+        print(f"✗ Error loading/fusing model: {e}")
+        model = None
+
+# Load model on first import
+_load_model_once()
 
 LOG_MAX_LINES = 1500
 LOG_PATH = os.path.join(PROJECT_ROOT, "app.log")
