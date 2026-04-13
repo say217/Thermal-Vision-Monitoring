@@ -1,11 +1,15 @@
 # PHONEIX V9 is Thermal Vision Monitoring Platform   
 
 
-<img width="1101" height="612" alt="Screenshot 2026-02-18 205325" src="https://github.com/user-attachments/assets/e1b7ac00-7401-4218-baed-97948eb5abef" />
-<img width="907" height="384" alt="image" src="https://github.com/user-attachments/assets/a06ccd73-1a70-4e2c-8fa3-55fd9e247b17" />
+<img width="1906" height="910" alt="image" src="https://github.com/user-attachments/assets/c845b2ff-620e-4dcb-acf5-87023028585b" />
+
+
 Welcome to NightFlare!
 
 NightFlare is a next-generation surveillance system designed to keep you safe and informed, day and night. Our platform combines advanced technology with easy-to-understand features, making it accessible for everyone.
+
+
+
 
 **Technology Stack**
 
@@ -24,6 +28,9 @@ NightFlare is a next-generation surveillance system designed to keep you safe an
 **What problem does Thermal Vision solve?**
 
 Traditional surveillance systems often struggle in challenging conditions—darkness, smoke, fog, or when rapid response is needed for emergencies like wildfires. Thermal Vision overcomes these limitations by using smart thermal imaging and AI-driven detection, ensuring you never miss a critical event. Whether it’s monitoring remote areas, detecting people in low visibility, or spotting wildfires before they spread, our system provides reliable protection where others fall short.
+
+
+<img width="1880" height="904" alt="image" src="https://github.com/user-attachments/assets/e86a3dab-2c44-47db-b0a5-b2aa58cbe324" />
 
 **Where and why is it useful?**
 
@@ -65,6 +72,9 @@ Thermal spike on a person (possible fire proximity)
 **How it works:**
 
 Thermal Vision uses smart cameras and sensors to monitor your surroundings. When something unusual is detected—like a person, fire, or movement—the system sends you an alert. You can check live feeds, review past events, and stay informed from anywhere.
+
+
+<img width="1101" height="612" alt="Screenshot 2026-02-18 205325" src="https://github.com/user-attachments/assets/e1b7ac00-7401-4218-baed-97948eb5abef" />
 
 
 **Why choose Thermal Vision?**
